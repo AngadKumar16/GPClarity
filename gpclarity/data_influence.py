@@ -304,6 +304,7 @@ class DataInfluenceMap:
         X_train: np.ndarray,
         y_train: np.ndarray,
         K_full: np.ndarray,
+        verbose: bool = False,
     ) -> Tuple[float, float]:
         """Compute LOO metrics for single point."""
         n = X_train.shape[0]
