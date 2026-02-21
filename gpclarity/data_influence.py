@@ -198,7 +198,9 @@ class DataInfluenceMap:
             # L @ L.T = K, solve for L_inv then K_inv = L_inv.T @ L_inv
             L_inv = np.linalg.solve_triangular(L, np.eye(n), lower=True)
             K_inv = L_inv.T @ L_inv
-            scores = 1.0 / np.diag(K_inv)
+            diag = np.diag(K_inv)
+            scores = np.where(np.abs(diag) > 1e-12, 1.0 / diag, 0.0)
+
             
             # Handle numerical edge cases
             if not np.all(np.isfinite(scores)):
@@ -304,7 +306,6 @@ class DataInfluenceMap:
         X_train: np.ndarray,
         y_train: np.ndarray,
         K_full: np.ndarray,
-        verbose: bool = False,
     ) -> Tuple[float, float]:
         """Compute LOO metrics for single point."""
         n = X_train.shape[0]
@@ -361,7 +362,7 @@ class DataInfluenceMap:
         except ImportError:
             warnings.warn("joblib not installed, falling back to sequential")
             return self._compute_loo_variance_increase(
-                X_train, y_train, n_jobs=1, verbose=False
+                X_train, y_train, n_jobs=1, verbose=verbose
             )
 
         n = X_train.shape[0]
@@ -434,8 +435,6 @@ class DataInfluenceMap:
         leverage_result = self.compute_influence_scores(X_train, y_train=None)
         scores = leverage_result.scores
     
-
-        
         # LOO analysis (optional, slower)
         loo_var, loo_err = None, None
         if compute_loo:
