@@ -430,7 +430,7 @@ class DataInfluenceMap:
         start_time = time.perf_counter()
         
         # Leverage scores (fast)
-        leverage_result = self.compute_influence_scores(X_train)
+        leverage_result = self.compute_influence_scores(X_train, y_train=None)
         scores = leverage_result.scores
         
         # LOO analysis (optional, slower)
