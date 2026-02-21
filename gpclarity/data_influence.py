@@ -9,6 +9,7 @@ import time
 import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, Union
+from scipy.linalg import solve_triangular
 
 import GPy
 import numpy as np
@@ -325,7 +326,7 @@ class DataInfluenceMap:
             L = _cholesky_with_jitter(K_loo)
             
             # Solve for variance without point i
-            v = np.linalg.solve_triangular(L, k_star, lower=True)
+            v = solve_triangular(L, k_star, lower=True)
             k_inv_k = np.dot(v, v)
             var_without_i = K_full[i, i] - k_inv_k
             
