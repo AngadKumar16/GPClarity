@@ -8,6 +8,7 @@ import logging
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Protocol, Tuple, Union
+from dataclasses import asdict
 
 import numpy as np
 from gpclarity.exceptions import UncertaintyError
@@ -280,7 +281,7 @@ class UncertaintyProfiler:
         )
         
         self._diagnostics_cache = diagnostics
-        return diagnostics
+        return asdict(diagnostics)
 
     def classify_regions(
         self,
@@ -369,7 +370,7 @@ class UncertaintyProfiler:
         low_unc_mask = ~high_unc_mask
         
         result = {
-            "high_uncertainty": {
+            "high_uncertainty_points": {
                 "points": X_test[high_unc_mask],
                 "values": var[high_unc_mask],
                 "indices": np.where(high_unc_mask)[0],
