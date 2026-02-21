@@ -195,7 +195,7 @@ class HyperparameterTracker:
             f"in {total_time:.2f}s"
         )
 
-        return self._history
+        return self.history
 
     def get_parameter_trajectory(self, param_name: str) -> Tuple[np.ndarray, np.ndarray]:
         """
