@@ -41,6 +41,8 @@ if _GPY_AVAILABLE:
         interpret_lengthscale,
         extract_kernel_params_flat,
         interpret_variance,
+        get_lengthscale,
+        get_noise_variance,
     )
     from .uncertainty_analysis import UncertaintyProfiler
     from .hyperparam_tracker import HyperparameterTracker
@@ -53,8 +55,6 @@ if _GPY_AVAILABLE:
     from .data_influence import DataInfluenceMap
     from .utils import (
         check_model_health,
-        get_lengthscale,
-        get_noise_variance,
     )
 else:
     # Define stubs
