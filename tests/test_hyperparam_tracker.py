@@ -38,7 +38,7 @@ class TestHyperparameterTracker:
     def test_convergence_report(self, simple_gp):
         """Test convergence analysis."""
         tracker = gpclarity.HyperparameterTracker(simple_gp)
-        tracker.wrapped_optimize(max_iters=10)
+        tracker.wrapped_optimize(max_iters=20)
         report = tracker.get_convergence_report()
 
         assert isinstance(report, dict)
