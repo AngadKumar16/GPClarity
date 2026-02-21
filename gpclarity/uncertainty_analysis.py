@@ -591,6 +591,14 @@ class UncertaintyProfiler:
             dists = np.linalg.norm(X_train - x, axis=1)
             distances[i] = np.min(dists)
         return distances
+    def predict_with_uncertainty(self, X_new: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Predict with uncertainty quantification.
+        
+        Returns:
+            Tuple of (mean, variance)
+        """
+        return self.model.predict(X_new)
 
 
 # High-level convenience functions
