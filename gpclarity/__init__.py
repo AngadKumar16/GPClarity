@@ -43,12 +43,13 @@ if _GPY_AVAILABLE:
         interpret_variance,
         get_lengthscale,
         get_noise_variance,
+        count_kernel_components,
+
     )
     from .uncertainty_analysis import UncertaintyProfiler
     from .hyperparam_tracker import HyperparameterTracker
     from .model_complexity import (
         compute_complexity_score,
-        count_kernel_components,
         compute_roughness_score,
         compute_noise_ratio,
     )

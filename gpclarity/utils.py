@@ -447,7 +447,7 @@ def check_model_health(model: Any) -> Dict[str, Union[bool, str, float]]:
             warnings_list.append(f"Could not compute log-likelihood: {e}")
     
     return {
-        'is_healthy': len(issues) == 0,
+        'healthy': len(issues) == 0,
         'issues': issues,
         'warnings': warnings_list,
         'log_likelihood': ll,
