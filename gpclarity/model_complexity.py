@@ -378,7 +378,7 @@ def compute_complexity_score(
             "interpretation": metrics.category.description,
             "risk_level": metrics.category.risk_level,
             "risk_factors": metrics.risk_factors,
-            "metrics": {
+            "components": {
                 "n_parameters": metrics.n_parameters,
                 "n_kernel_components": metrics.n_kernel_components,
                 "roughness_score": metrics.roughness_score,
