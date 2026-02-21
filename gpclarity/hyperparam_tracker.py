@@ -68,9 +68,15 @@ class HyperparameterTracker:
         self._start_time: Optional[float] = None
 
     @property
-    def history(self) -> List[OptimizationState]:
-        """Get optimization history."""
-        return self._history.copy()
+    def history(self) -> Dict[str, List[float]]:
+        """Dict format for compatibility."""
+        result: Dict[str, List[float]] = {}
+        for state in self._history:
+            for name, val in state.parameters.items():
+                if name not in result:
+                    result[name] = []
+                result[name].append(float(val) if not hasattr(val, '__iter__') else float(val[0]))
+        return result
 
     @property
     def iteration_count(self) -> int:
