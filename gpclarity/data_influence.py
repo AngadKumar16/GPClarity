@@ -353,6 +353,7 @@ class DataInfluenceMap:
         K_full: np.ndarray,
         n_jobs: int,
         iterator,
+        verbose: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Parallel LOO computation using joblib."""
         try:
@@ -365,7 +366,7 @@ class DataInfluenceMap:
 
         n = X_train.shape[0]
         results = Parallel(n_jobs=n_jobs)(
-            delayed(self._compute_loo_point)(i, X_train, y_train, K_full)
+            delayed(self._compute_loo_point)(i, X_train, y_train, K_full, verbose=verbose)
             for i in iterator
         )
         
