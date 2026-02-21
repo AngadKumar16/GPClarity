@@ -432,8 +432,7 @@ class DataInfluenceMap:
         
         # Leverage scores (fast)
         leverage_result = self.compute_influence_scores(X_train, y_train=None)
-        diag = np.diag(K_inv)
-        cores = np.where(np.abs(diag) > 1e-12, 1.0 / diag, 0.0)
+        scores = leverage_result.scores
 
         
         # LOO analysis (optional, slower)
