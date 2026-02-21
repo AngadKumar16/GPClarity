@@ -284,17 +284,14 @@ def format_kernel_tree(model: GPy.models.GPRegression) -> str:
 
     return format_node(structure)
 
-def count_kernel_components(model: Any) -> int:
+def count_kernel_components(kern: Any) -> int:
     """Count total number of kernel components (leaf nodes)."""
-    if not hasattr(model, "kern"):
-        return 0
-    
     def count_leaves(kernel: Any) -> int:
         if hasattr(kernel, "parts") and kernel.parts:
             return sum(count_leaves(k) for k in kernel.parts)
         return 1
     
-    return count_leaves(model.kern)
+    return count_leaves(kern)
 
 
 def _extract_values(param: Any) -> Union[float, List[float]]:
