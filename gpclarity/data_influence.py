@@ -9,7 +9,6 @@ import time
 import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, Union
-from typing import Union
 
 import GPy
 import numpy as np
@@ -72,7 +71,7 @@ def _validate_train_data(func: Callable) -> Callable:
                 )
                 y_train = y_train.ravel()
                 
-        return func(self, X_train, y_train, *args, **kwargs)
+        return func(self, X_train, y_train=y_train, *args, **kwargs)
     
     return wrapper
 
@@ -431,7 +430,9 @@ class DataInfluenceMap:
         
         # Leverage scores (fast)
         leverage_result = self.compute_influence_scores(X_train, y_train=None)
-        scores = leverage_result.scores
+        diag = np.diag(K_inv)
+        cores = np.where(np.abs(diag) > 1e-12, 1.0 / diag, 0.0)
+
         
         # LOO analysis (optional, slower)
         loo_var, loo_err = None, None
