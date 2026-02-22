@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 import time
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -293,7 +293,8 @@ class HyperparameterTracker:
                 trend_direction=trend,
             )
 
-        return report
+        return {k: asdict(v) for k, v in report.items()}
+
 
     @staticmethod
     def _validate_convergence_window(window: int, history_length: int) -> None:
