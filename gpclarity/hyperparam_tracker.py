@@ -293,7 +293,12 @@ class HyperparameterTracker:
                 trend_direction=trend,
             )
 
-        return {k: asdict(v) for k, v in report.items()}
+        report_dict = {}
+        for k, v in report.items():
+            d = asdict(v)
+            d['converged'] = d['is_converged']
+            report_dict[k] = d
+        return report_dict
 
 
     @staticmethod

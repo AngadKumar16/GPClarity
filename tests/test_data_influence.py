@@ -18,6 +18,7 @@ class TestDataInfluenceMap:
     def test_compute_influence_scores(self, simple_gp):
         """Test influence score computation."""
         influence_map = gpclarity.DataInfluenceMap(simple_gp)
+        scores = influence_map.compute_influence_scores(simple_gp.X)
         assert len(scores.scores) > 0
         assert np.all(scores.scores > 0)
 
