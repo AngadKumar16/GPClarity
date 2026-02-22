@@ -57,7 +57,7 @@ class UncertaintyDiagnostics:
     median_uncertainty: float
     max_uncertainty: float
     min_uncertainty: float
-    std_uncertainty: float
+    uncertainty_std: float
     total_uncertainty: float
     high_uncertainty_ratio: float
     uncertainty_skewness: float
@@ -269,7 +269,7 @@ class UncertaintyProfiler:
             median_uncertainty=median_var,
             max_uncertainty=max_var,
             min_uncertainty=min_var,
-            std_uncertainty=std_var,
+            uncertainty_std=std_var,
             total_uncertainty=float(np.sum(var)),
             high_uncertainty_ratio=high_unc_ratio,
             uncertainty_skewness=skew,
@@ -376,7 +376,7 @@ class UncertaintyProfiler:
                 "indices": np.where(high_unc_mask)[0],
                 "mean_uncertainty": float(np.mean(var[high_unc_mask])) if np.any(high_unc_mask) else 0.0,
             },
-            "low_uncertainty": {
+            "low_uncertainty_points": {
                 "points": X_test[low_unc_mask],
                 "values": var[low_unc_mask],
                 "indices": np.where(low_unc_mask)[0],
