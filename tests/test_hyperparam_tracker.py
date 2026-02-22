@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 import gpclarity
+from tests.conftest import simple_gp
 
 
 class TestHyperparameterTracker:
@@ -38,7 +39,8 @@ class TestHyperparameterTracker:
     def test_convergence_report(self, simple_gp):
         """Test convergence analysis."""
         tracker = gpclarity.HyperparameterTracker(simple_gp)
-        tracker.wrapped_optimize(max_iters=30)
+        # Disable early stopping by setting high patience or use many iterations
+        tracker.wrapped_optimize(max_iters=30, patience=30)  # Add patience parameter
         report = tracker.get_convergence_report()
 
         assert isinstance(report, dict)

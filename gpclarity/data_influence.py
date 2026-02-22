@@ -35,6 +35,9 @@ class InfluenceResult:
     def __array__(self):
         """Allow numpy operations on result directly."""
         return self.scores
+    
+    def __len__(self):
+        return len(self.scores)
 
 
 def _validate_train_data(func: Callable) -> Callable:
@@ -476,12 +479,12 @@ class DataInfluenceMap:
                 "p95": float(p95),
                 "p5": float(p5),
             },
-            "most_influential": {
+            "most_influential_point": {
                 "index": most_inf_idx,
                 "location": X_train[most_inf_idx].tolist(),
                 "score": float(scores[most_inf_idx]),
             },
-            "least_influential": {
+            "least_influential_point": {
                 "index": least_inf_idx,
                 "location": X_train[least_inf_idx].tolist(),
                 "score": float(scores[least_inf_idx]),
