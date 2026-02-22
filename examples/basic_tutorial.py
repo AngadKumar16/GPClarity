@@ -59,8 +59,8 @@ print("Re-running optimization with tracking...")
 model.kern.lengthscale = 1.0
 model.kern.white.variance = 0.1
 
-history = tracker.wrapped_optimize(max_iters=20)
-print(f"Tracked {len(history)} parameters over 20 iterations")
+history = tracker.wrapped_optimize(max_iters=30)
+print(f"Tracked {len(history)} parameters over 30 iterations")
 
 # Plot evolution
 fig = tracker.plot_evolution(figsize=(12, 8))

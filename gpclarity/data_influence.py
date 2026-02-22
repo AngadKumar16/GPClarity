@@ -197,7 +197,7 @@ class DataInfluenceMap:
             
             # Optimized leverage score computation: O(n³) instead of O(n⁴)
             # L @ L.T = K, solve for L_inv then K_inv = L_inv.T @ L_inv
-            L_inv = np.linalg.solve_triangular(L, np.eye(n), lower=True)
+            L_inv = solve_triangular(L, np.eye(n), lower=True)
             K_inv = L_inv.T @ L_inv
             diag = np.diag(K_inv)
             scores = np.where(np.abs(diag) > 1e-12, 1.0 / diag, 0.0)

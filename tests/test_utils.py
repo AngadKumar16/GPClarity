@@ -10,6 +10,9 @@ import gpclarity
 
 
 class TestUtils:
+    @pytest.fixture(autouse=True)
+    def setup(self, simple_gp):
+        self.model = simple_gp
     def test_get_lengthscale(self, simple_gp):
         """Test lengthscale extraction."""
         ls = gpclarity.get_lengthscale(simple_gp)
