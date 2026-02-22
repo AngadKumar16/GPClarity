@@ -37,15 +37,15 @@ class TestUtils:
         # Healthy model
         health = gpclarity.check_model_health(self.model)
         assert isinstance(health, dict)
-        assert "is_healthy" in health
-        assert health["is_healthy"] is True
+        assert "healthy" in health
+        assert health["healthy"] is True
         assert len(health["issues"]) == 0
         assert "log_likelihood" in health
         
         # Model without predict
         bad_model = object()
         health = gpclarity.check_model_health(bad_model)
-        assert health["is_healthy"] is False
+        assert health["healthy"] is False
         assert "Model missing predict() method" in health["issues"]
 
     def test_check_model_health_invalid(self):
@@ -60,4 +60,4 @@ class TestUtils:
         model.kern.lengthscale = np.nan
 
         health = gpclarity.check_model_health(model)
-        assert health["is_healthy"] is False
+        assert health["healthy"] is False
