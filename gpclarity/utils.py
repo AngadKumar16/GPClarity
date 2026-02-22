@@ -13,10 +13,13 @@ logger = logging.getLogger(__name__)
 
 class ComplexityError(Exception):
     """Raised when complexity computation fails."""
+
     pass
+
 
 class LinAlgError(Exception):
     """Linear algebra computation error."""
+
     pass
 
 
@@ -36,20 +39,22 @@ def count_kernel_components(kern: GPy.kern.Kern) -> int:
     try:
         if not hasattr(kern, "parts"):
             return 1
-            
+
         if not kern.parts:
             return 1
-            
+
         # Validate parts is iterable
         if not hasattr(kern.parts, "__iter__"):
             raise ComplexityError(f"Kernel 'parts' is not iterable: {type(kern.parts)}")
-            
+
         return sum(count_kernel_components(k) for k in kern.parts)
-        
+
     except ComplexityError:
         raise
     except RecursionError as e:
-        logger.error(f"Recursion limit hit in kernel counting (circular reference?): {e}")
+        logger.error(
+            f"Recursion limit hit in kernel counting (circular reference?): {e}"
+        )
         raise ComplexityError("Kernel structure too deep or circular") from e
     except Exception as e:
         logger.error(f"Unexpected error counting kernel components: {e}")
@@ -74,29 +79,29 @@ def compute_roughness_score(kern: GPy.kern.Kern) -> float:
 
     def traverse(k):
         nonlocal roughness, count
-        
+
         try:
             if not hasattr(k, "parts"):
                 # Leaf kernel
                 if hasattr(k, "lengthscale"):
                     ls = k.lengthscale
                     ls_mean = np.mean(ls) if hasattr(ls, "__iter__") else ls
-                    
+
                     if not np.isfinite(ls_mean):
                         logger.warning(f"Non-finite lengthscale encountered: {ls_mean}")
                         return
-                        
+
                     roughness += 1.0 / (ls_mean + 1e-10)
                     count += 1
                 return
-                
+
             if k.parts:
                 for i, part in enumerate(k.parts):
                     try:
                         traverse(part)
                     except Exception as e:
                         logger.warning(f"Failed to traverse kernel part {i}: {e}")
-                        
+
         except Exception as e:
             logger.warning(f"Error traversing kernel: {e}")
 
@@ -109,7 +114,7 @@ def compute_roughness_score(kern: GPy.kern.Kern) -> float:
     if count == 0:
         logger.warning("No lengthscales found in kernel, returning zero roughness")
         return 0.0
-        
+
     return roughness / count
 
 
@@ -129,33 +134,35 @@ def compute_noise_ratio(model: GPy.models.GPRegression) -> float:
     try:
         if not hasattr(model, "kern"):
             raise ComplexityError("Model has no kernel")
-            
+
         if not hasattr(model.kern, "variance"):
             # Some kernels don't have variance (e.g., combination kernels)
             logger.debug("Kernel has no variance attribute, assuming SNR=1.0")
             return 1.0
-            
+
         signal_var = float(model.kern.variance)
-        
+
         if not hasattr(model, "Gaussian_noise"):
             raise ComplexityError("Model has no Gaussian_noise attribute")
-            
+
         if not hasattr(model.Gaussian_noise, "variance"):
             raise ComplexityError("Gaussian_noise has no variance attribute")
-            
+
         noise_var = float(model.Gaussian_noise.variance)
-        
+
         # Handle edge cases
         if not np.isfinite(signal_var) or not np.isfinite(noise_var):
-            logger.warning(f"Non-finite variance values: signal={signal_var}, noise={noise_var}")
+            logger.warning(
+                f"Non-finite variance values: signal={signal_var}, noise={noise_var}"
+            )
             return 1.0
-            
+
         if noise_var < 0:
             logger.warning(f"Negative noise variance: {noise_var}")
             return 1.0
-            
+
         return float(signal_var / (noise_var + 1e-10))
-        
+
     except (AttributeError, TypeError, ValueError) as e:
         # Expected failures for non-standard model structures
         logger.debug(f"Could not compute noise ratio (expected for some models): {e}")
@@ -189,10 +196,10 @@ def compute_complexity_score(
     """
     if X is None or not hasattr(X, "shape"):
         raise ValueError("X must be a numpy array")
-        
+
     if X.shape[0] == 0:
         raise ValueError("X cannot be empty")
-    
+
     try:
         n_components = count_kernel_components(model.kern)
         roughness = compute_roughness_score(model.kern)
@@ -200,11 +207,11 @@ def compute_complexity_score(
 
         # Effective degrees of freedom (approximation)
         effective_dof = X.shape[0] * 0.5  # default fallback
-        
+
         try:
             K = model.kern.K(X, X)
             noise_var = float(model.Gaussian_noise.variance)
-            
+
             if not np.isfinite(noise_var):
                 logger.warning(f"Non-finite noise variance: {noise_var}")
             else:
@@ -212,7 +219,7 @@ def compute_complexity_score(
                 if np.isfinite(trace_K) and trace_K >= 0:
                     trace_ratio = trace_K / (trace_K + noise_var * X.shape[0] + 1e-10)
                     effective_dof = trace_ratio * X.shape[0]
-                    
+
         except (AttributeError, ValueError, np.linalg.LinAlgError) as e:
             logger.debug(f"Could not compute effective DOF: {e}")
         except Exception as e:
@@ -220,13 +227,11 @@ def compute_complexity_score(
 
         # Composite complexity score (0 = simple, ∞ = complex)
         dof_ratio = effective_dof / X.shape[0]
-        complexity_score = (
-            n_components * roughness * noise_ratio / (dof_ratio + 1e-10)
-        )
+        complexity_score = n_components * roughness * noise_ratio / (dof_ratio + 1e-10)
 
         # Interpretation thresholds (adaptive)
         complexity_score_log = np.log10(complexity_score + 1)
-        
+
         if complexity_score_log < 0.5:
             interpretation = "Simple model (low risk of overfitting)"
             suggestions = [
@@ -261,32 +266,31 @@ def compute_complexity_score(
                 "high_noise": noise_ratio < 0.1,
             },
         }
-        
+
     except ComplexityError:
         raise
     except Exception as e:
         logger.error(f"Unexpected error in complexity score computation: {e}")
         raise ComplexityError(f"Failed to compute complexity score: {e}") from e
-    
+
+
 def _validate_kernel_matrix(K: np.ndarray) -> None:
     """
     Validate kernel matrix for numerical issues.
-    
+
     Args:
         K: Kernel matrix to validate
-        
+
     Raises:
         LinAlgError: If matrix is invalid
     """
     if not np.all(np.isfinite(K)):
         n_nonfinite = np.sum(~np.isfinite(K))
-        raise LinAlgError(
-            f"Kernel matrix contains {n_nonfinite} non-finite values"
-        )
-        
+        raise LinAlgError(f"Kernel matrix contains {n_nonfinite} non-finite values")
+
     if K.shape[0] != K.shape[1]:
         raise LinAlgError(f"Kernel matrix must be square, got {K.shape}")
-        
+
     # Check symmetry
     if not np.allclose(K, K.T, rtol=1e-5, atol=1e-8):
         max_asym = np.max(np.abs(K - K.T))
@@ -301,16 +305,16 @@ def _cholesky_with_jitter(
 ) -> np.ndarray:
     """
     Compute Cholesky decomposition with progressive jitter.
-    
+
     Args:
         K: Positive semi-definite matrix
         max_attempts: Maximum jitter attempts
         initial_jitter: Starting jitter magnitude
         jitter_growth: Multiplicative factor for jitter increase
-        
+
     Returns:
         Lower triangular Cholesky factor
-        
+
     Raises:
         LinAlgError: If decomposition fails after all attempts
     """
@@ -318,10 +322,10 @@ def _cholesky_with_jitter(
         return np.linalg.cholesky(K)
     except np.linalg.LinAlgError:
         pass
-        
+
     K_work = K.copy()
     jitter = initial_jitter
-    
+
     for attempt in range(max_attempts):
         K_work = K_work + np.eye(K.shape[0]) * jitter
         try:
@@ -330,7 +334,7 @@ def _cholesky_with_jitter(
             return L
         except np.linalg.LinAlgError:
             jitter *= jitter_growth
-            
+
     raise LinAlgError(
         f"Cholesky decomposition failed after {max_attempts} attempts "
         f"with max jitter {jitter/jitter_growth:.2e}"
@@ -340,20 +344,20 @@ def _cholesky_with_jitter(
 def _extract_param_value(param: Any) -> Union[float, np.ndarray]:
     """
     Safely extract scalar or array value from GPy parameter.
-    
+
     Args:
         param: GPy parameter object
-        
+
     Returns:
         Scalar float or numpy array
     """
     val = param.param_array
-    
+
     if val is None:
         return 0.0
-        
+
     arr = np.atleast_1d(val)
-    
+
     if len(arr) == 1:
         return float(arr[0])
     else:
@@ -363,11 +367,11 @@ def _extract_param_value(param: Any) -> Union[float, np.ndarray]:
 def _validate_convergence_window(window: int, history_length: int) -> None:
     """
     Validate window size for convergence analysis.
-    
+
     Args:
         window: Requested window size
         history_length: Available history length
-        
+
     Raises:
         ValueError: If window invalid
     """
@@ -378,78 +382,82 @@ def _validate_convergence_window(window: int, history_length: int) -> None:
             f"Window ({window}) too large for history length ({history_length}). "
             f"Max allowed: {history_length // 2}"
         )
-    
+
+
 def _validate_array(arr: Any, name: str = "array") -> np.ndarray:
     """
     Validate and convert input to numpy array.
-    
+
     Args:
         arr: Input array-like
         name: Name for error messages
-        
+
     Returns:
         Validated numpy array
-        
+
     Raises:
         ValueError: If invalid
     """
     if arr is None:
         raise ValueError(f"{name} cannot be None")
-    
+
     try:
         arr = np.asarray(arr)
     except Exception as e:
         raise ValueError(f"{name} must be array-like: {e}") from e
-    
+
     if arr.size == 0:
         raise ValueError(f"{name} cannot be empty")
-    
+
     if not np.all(np.isfinite(arr)):
         n_invalid = np.sum(~np.isfinite(arr))
         raise ValueError(f"{name} contains {n_invalid} non-finite values")
-    
+
     return arr
+
 
 def check_model_health(model: Any) -> Dict[str, Union[bool, str, float]]:
     """
     Check if GP model is healthy and ready for analysis.
-    
+
     Returns:
         Dictionary with health status and diagnostics
     """
     issues = []
     warnings_list = []
-    
+
     # Check basic attributes
-    if not hasattr(model, 'predict'):
+    if not hasattr(model, "predict"):
         issues.append("Model missing predict() method")
-    if not hasattr(model, 'kern'):
+    if not hasattr(model, "kern"):
         issues.append("Model missing kern attribute")
-        
+
     # Check parameters
-    if hasattr(model, 'parameters'):
+    if hasattr(model, "parameters"):
         for param in model.parameters:
-            if hasattr(param, 'param_array'):
+            if hasattr(param, "param_array"):
                 arr = param.param_array
                 if not np.all(np.isfinite(arr)):
                     issues.append(f"Parameter {param.name} has non-finite values")
-                    
+
     # Check log-likelihood
     ll = None
-    if hasattr(model, 'log_likelihood') and not issues:
+    if hasattr(model, "log_likelihood") and not issues:
         try:
             ll = float(model.log_likelihood())
             if not np.isfinite(ll):
                 warnings_list.append("Log-likelihood is not finite")
             elif ll > 0:
-                warnings_list.append("Log-likelihood is positive (unusual for regression)")
+                warnings_list.append(
+                    "Log-likelihood is positive (unusual for regression)"
+                )
         except Exception as e:
             warnings_list.append(f"Could not compute log-likelihood: {e}")
-    
+
     return {
-        'healthy': len(issues) == 0,
-        'issues': issues,
-        'warnings': warnings_list,
-        'log_likelihood': ll,
-        'n_parameters': len(model.parameters) if hasattr(model, 'parameters') else 0,
+        "healthy": len(issues) == 0,
+        "issues": issues,
+        "warnings": warnings_list,
+        "log_likelihood": ll,
+        "n_parameters": len(model.parameters) if hasattr(model, "parameters") else 0,
     }

@@ -20,7 +20,7 @@ class TestDataInfluenceMap:
         influence_map = gpclarity.DataInfluenceMap(simple_gp)
         result = influence_map.compute_influence_scores(simple_gp.X)
         scores = result.scores
-        
+
         assert len(scores) == simple_gp.X.shape[0]
         assert np.all(scores > 0)
         assert not np.any(np.isnan(scores))

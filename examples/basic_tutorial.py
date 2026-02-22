@@ -23,15 +23,15 @@ model.optimize()
 print("✅ Model trained successfully!")
 
 # 1. Kernel Interpretation
-print("\n" + "="*50)
+print("\n" + "=" * 50)
 print("KERNEL INTERPRETATION")
-print("="*50)
+print("=" * 50)
 gpclarity.summarize_kernel(model)
 
 # 2. Uncertainty Profiling
-print("\n" + "="*50)
+print("\n" + "=" * 50)
 print("UNCERTAINTY ANALYSIS")
-print("="*50)
+print("=" * 50)
 
 profiler = gpclarity.UncertaintyProfiler(model)
 X_test = np.linspace(-2, 12, 200).reshape(-1, 1)
@@ -39,7 +39,7 @@ X_test = np.linspace(-2, 12, 200).reshape(-1, 1)
 # Plot uncertainty profile
 fig, ax = plt.subplots(figsize=(12, 6))
 profiler.plot(X_test, X_train=X_train, y_train=y_train, ax=ax)
-plt.savefig("uncertainty_profile.png", dpi=150, bbox_inches='tight')
+plt.savefig("uncertainty_profile.png", dpi=150, bbox_inches="tight")
 plt.show()
 
 # Compute diagnostics
@@ -48,9 +48,9 @@ print(f"Mean uncertainty: {diagnostics['mean_uncertainty']:.4f}")
 print(f"Max uncertainty: {diagnostics['max_uncertainty']:.4f}")
 
 # 3. Hyperparameter Tracking
-print("\n" + "="*50)
+print("\n" + "=" * 50)
 print("HYPERPARAMETER TRACKING")
-print("="*50)
+print("=" * 50)
 
 tracker = gpclarity.HyperparameterTracker(model)
 print("Re-running optimization with tracking...")
@@ -64,37 +64,39 @@ print(f"Tracked {len(history)} parameters over 30 iterations")
 
 # Plot evolution
 fig = tracker.plot_evolution(figsize=(12, 8))
-plt.savefig("hyperparam_evolution.png", dpi=150, bbox_inches='tight')
+plt.savefig("hyperparam_evolution.png", dpi=150, bbox_inches="tight")
 plt.show()
 
 # 4. Model Complexity
-print("\n" + "="*50)
+print("\n" + "=" * 50)
 print("MODEL COMPLEXITY ANALYSIS")
-print("="*50)
+print("=" * 50)
 
 complexity = gpclarity.compute_complexity_score(model, X_train)
 print(f"Complexity Score: {complexity['score']:.3f}")
 print(f"Interpretation: {complexity['interpretation']}")
 print("Components:")
-for key, val in complexity['components'].items():
+for key, val in complexity["components"].items():
     print(f"  └─ {key}: {val:.3f}")
 
 # 5. Data Influence
-print("\n" + "="*50)
+print("\n" + "=" * 50)
 print("DATA INFLUENCE ANALYSIS")
-print("="*50)
+print("=" * 50)
 
 influence = gpclarity.DataInfluenceMap(model)
 scores = influence.compute_influence_scores(X_train)
 
 fig, ax = plt.subplots(figsize=(12, 6))
 influence.plot_influence(X_train, scores, ax=ax)
-plt.savefig("data_influence.png", dpi=150, bbox_inches='tight')
+plt.savefig("data_influence.png", dpi=150, bbox_inches="tight")
 plt.show()
 
 # Get detailed report
 report = influence.get_influence_report(X_train, y_train)
 most_inf = report["most_influential_point"]
-print(f"Most influential point: index {most_inf['index']} (score: {most_inf['score']:.3f})")
+print(
+    f"Most influential point: index {most_inf['index']} (score: {most_inf['score']:.3f})"
+)
 
 print("\n🎉 Tutorial complete! Check the generated PNG files for visualizations.")

@@ -12,9 +12,10 @@ import numpy as np
 @dataclass
 class LengthscaleThresholds:
     """Configurable thresholds for lengthscale interpretation."""
+
     rapid_variation: float = 0.5
     smooth_trend: float = 2.0
-    
+
     def validate(self):
         """Ensure thresholds are logically ordered."""
         if not 0 < self.rapid_variation < self.smooth_trend:
@@ -28,9 +29,10 @@ class LengthscaleThresholds:
 @dataclass
 class VarianceThresholds:
     """Configurable thresholds for variance interpretation."""
+
     very_low: float = 0.01
     high: float = 10.0
-    
+
     def validate(self):
         """Ensure thresholds are positive."""
         if self.very_low <= 0 or self.high <= 0:
@@ -43,9 +45,10 @@ class VarianceThresholds:
 @dataclass
 class InterpretationConfig:
     """Complete configuration for kernel interpretation."""
+
     lengthscale: LengthscaleThresholds = None
     variance: VarianceThresholds = None
-    
+
     def __post_init__(self):
         if self.lengthscale is None:
             self.lengthscale = LengthscaleThresholds()
@@ -94,7 +97,7 @@ def extract_kernel_params(kern: GPy.kern.Kern) -> Dict[str, float]:
 
 def interpret_lengthscale(
     lengthscale: Union[float, np.ndarray],
-    config: Optional[LengthscaleThresholds] = None
+    config: Optional[LengthscaleThresholds] = None,
 ) -> str:
     """
     Interpret lengthscale magnitude with data-aware thresholds.
@@ -107,7 +110,7 @@ def interpret_lengthscale(
         Human-readable interpretation string
     """
     cfg = (config or LengthscaleThresholds()).validate()
-    
+
     # Handle ARD lengthscales
     if isinstance(lengthscale, (list, np.ndarray)):
         ls_mean = np.mean(lengthscale)
@@ -125,9 +128,7 @@ def interpret_lengthscale(
 
 
 def interpret_variance(
-    variance: float,
-    name: str = "Signal",
-    config: Optional[VarianceThresholds] = None
+    variance: float, name: str = "Signal", config: Optional[VarianceThresholds] = None
 ) -> str:
     """
     Interpret variance magnitude with context-aware messaging.
@@ -141,7 +142,7 @@ def interpret_variance(
         Human-readable interpretation string
     """
     cfg = (config or VarianceThresholds()).validate()
-    
+
     if variance < cfg.very_low:
         return f"Very low {name.lower()} (≈{variance:.3f})"
     elif variance > cfg.high:
@@ -153,7 +154,7 @@ def summarize_kernel(
     model: GPy.models.GPRegression,
     X: Optional[np.ndarray] = None,
     verbose: bool = True,
-    config: Optional[InterpretationConfig] = None
+    config: Optional[InterpretationConfig] = None,
 ) -> Dict[str, Any]:
     """
     Generate comprehensive human-readable kernel interpretation.
@@ -191,8 +192,8 @@ def summarize_kernel(
             "variance_thresholds": {
                 "very_low": cfg.variance.very_low,
                 "high": cfg.variance.high,
-            }
-        }
+            },
+        },
     }
 
     # Parse each component recursively
@@ -208,7 +209,9 @@ def summarize_kernel(
                 comp["params"]["lengthscale"] = (
                     ls.tolist() if hasattr(ls, "__iter__") else float(ls)
                 )
-                comp["interpretation"]["smoothness"] = interpret_lengthscale(ls, cfg.lengthscale)
+                comp["interpretation"]["smoothness"] = interpret_lengthscale(
+                    ls, cfg.lengthscale
+                )
 
             if hasattr(kern, "variance"):
                 var = float(kern.variance)
@@ -247,17 +250,21 @@ def _print_kernel_summary(interpretation: Dict[str, Any]):
     print("\n KERNEL SUMMARY")
     print("=" * 50)
     print(f"Structure: {interpretation['kernel_structure']}")
-    
+
     # Print config info
     cfg = interpretation.get("config", {})
     if cfg:
         print(f"\nThresholds:")
         ls_cfg = cfg.get("lengthscale_thresholds", {})
-        print(f"  Lengthscale: rapid<{ls_cfg.get('rapid_variation', 0.5)}, "
-              f"smooth>{ls_cfg.get('smooth_trend', 2.0)}")
+        print(
+            f"  Lengthscale: rapid<{ls_cfg.get('rapid_variation', 0.5)}, "
+            f"smooth>{ls_cfg.get('smooth_trend', 2.0)}"
+        )
         var_cfg = cfg.get("variance_thresholds", {})
-        print(f"  Variance: very_low<{var_cfg.get('very_low', 0.01)}, "
-              f"high>{var_cfg.get('high', 10.0)}")
+        print(
+            f"  Variance: very_low<{var_cfg.get('very_low', 0.01)}, "
+            f"high>{var_cfg.get('high', 10.0)}"
+        )
     print()
 
     for comp in interpretation["components"]:
@@ -284,13 +291,15 @@ def format_kernel_tree(model: GPy.models.GPRegression) -> str:
 
     return format_node(structure)
 
+
 def count_kernel_components(kern: Any) -> int:
     """Count total number of kernel components (leaf nodes)."""
+
     def count_leaves(kernel: Any) -> int:
         if hasattr(kernel, "parts") and kernel.parts:
             return sum(count_leaves(k) for k in kernel.parts)
         return 1
-    
+
     return count_leaves(kern)
 
 
@@ -298,14 +307,14 @@ def _extract_values(param: Any) -> Union[float, List[float]]:
     """Safely extract values from GPy parameter."""
     if param is None:
         return 0.0
-    
+
     if hasattr(param, "values"):
         val = param.values
     elif hasattr(param, "param_array"):
         val = param.param_array
     else:
         val = param
-    
+
     arr = np.atleast_1d(val)
     if len(arr) == 1:
         return float(arr[0])
@@ -318,12 +327,12 @@ def extract_kernel_params_flat(model: Any) -> Dict[str, float]:
     """
     if not hasattr(model, "kern"):
         raise ValueError("Model must have 'kern' attribute")
-    
+
     params = {}
-    
+
     def extract(kernel: Any, path: str = ""):
         current_path = f"{path}.{kernel.name}" if path else kernel.name
-        
+
         if hasattr(kernel, "parameters"):
             for param in kernel.parameters:
                 param_path = f"{current_path}.{param.name}"
@@ -333,24 +342,27 @@ def extract_kernel_params_flat(model: Any) -> Dict[str, float]:
                         params[f"{param_path}[{i}]"] = float(v)
                 else:
                     params[param_path] = float(val)
-        
+
         if hasattr(kernel, "parts") and kernel.parts:
             for i, part in enumerate(kernel.parts):
                 extract(part, current_path)
-    
+
     extract(model.kern)
     return params
 
 
-def get_lengthscale(model: Any, as_dict: bool = False) -> Union[float, Dict[str, float]]:
+def get_lengthscale(
+    model: Any, as_dict: bool = False
+) -> Union[float, Dict[str, float]]:
     """
     Extract lengthscale(s) from model kernel.
     """
     if not hasattr(model, "kern"):
         raise ValueError("Model must have 'kern' attribute")
-    
+
     if as_dict:
         result = {}
+
         def find_lengthscales(kernel: Any, path: str = ""):
             current = f"{path}.{kernel.name}" if path else kernel.name
             if hasattr(kernel, "lengthscale"):
@@ -358,6 +370,7 @@ def get_lengthscale(model: Any, as_dict: bool = False) -> Union[float, Dict[str,
             if hasattr(kernel, "parts") and kernel.parts:
                 for part in kernel.parts:
                     find_lengthscales(part, current)
+
         find_lengthscales(model.kern)
         return result
     else:
@@ -369,8 +382,8 @@ def get_lengthscale(model: Any, as_dict: bool = False) -> Union[float, Dict[str,
 
 def get_noise_variance(model: Any) -> float:
     """Extract noise variance from GP model."""
-    if hasattr(model, 'Gaussian_noise') and hasattr(model.Gaussian_noise, 'variance'):
+    if hasattr(model, "Gaussian_noise") and hasattr(model.Gaussian_noise, "variance"):
         return float(model.Gaussian_noise.variance)
-    if hasattr(model, 'likelihood') and hasattr(model.likelihood, 'variance'):
+    if hasattr(model, "likelihood") and hasattr(model.likelihood, "variance"):
         return float(model.likelihood.variance)
     raise ValueError("Could not extract noise variance from model")

@@ -41,7 +41,7 @@ class TestUtils:
         assert health["healthy"] is True
         assert len(health["issues"]) == 0
         assert "log_likelihood" in health
-        
+
         # Model without predict
         bad_model = object()
         health = gpclarity.check_model_health(bad_model)

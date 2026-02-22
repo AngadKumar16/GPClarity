@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class OptimizationState:
     """Snapshot of model state at a specific iteration."""
+
     iteration: int
     parameters: Dict[str, Union[float, np.ndarray]]
     log_likelihood: Optional[float] = None
@@ -33,6 +34,7 @@ class OptimizationState:
 @dataclass
 class ConvergenceMetrics:
     """Statistical metrics for parameter convergence."""
+
     initial_mean: float
     final_mean: float
     relative_change: float
@@ -75,7 +77,9 @@ class HyperparameterTracker:
             for name, val in state.parameters.items():
                 if name not in result:
                     result[name] = []
-                result[name].append(float(val) if not hasattr(val, '__iter__') else float(val[0]))
+                result[name].append(
+                    float(val) if not hasattr(val, "__iter__") else float(val[0])
+                )
         return result
 
     @property
@@ -187,7 +191,9 @@ class HyperparameterTracker:
                 break
             except Exception as e:
                 logger.error(f"Optimization failed at iteration {i}: {e}")
-                raise OptimizationError(f"Optimization failed at iteration {i}: {e}") from e
+                raise OptimizationError(
+                    f"Optimization failed at iteration {i}: {e}"
+                ) from e
 
         total_time = time.perf_counter() - self._start_time
         logger.info(
@@ -197,7 +203,9 @@ class HyperparameterTracker:
 
         return self.history
 
-    def get_parameter_trajectory(self, param_name: str) -> Tuple[np.ndarray, np.ndarray]:
+    def get_parameter_trajectory(
+        self, param_name: str
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Extract time-series data for a specific parameter.
 
@@ -296,10 +304,9 @@ class HyperparameterTracker:
         report_dict = {}
         for k, v in report.items():
             d = asdict(v)
-            d['converged'] = d['is_converged']
+            d["converged"] = d["is_converged"]
             report_dict[k] = d
         return report_dict
-
 
     @staticmethod
     def _validate_convergence_window(window: int, history_length: int) -> None:
@@ -345,12 +352,12 @@ class HyperparameterTracker:
                     )
 
         # Log-likelihood trends
-        lls = [
-            s.log_likelihood for s in self._history if s.log_likelihood is not None
-        ]
+        lls = [s.log_likelihood for s in self._history if s.log_likelihood is not None]
         if len(lls) >= 2:
             if lls[-1] < lls[0]:
-                issues["warnings"].append("Log-likelihood decreased during optimization")
+                issues["warnings"].append(
+                    "Log-likelihood decreased during optimization"
+                )
                 issues["recommendations"].append("Check for numerical instability")
 
             issues["metrics"]["ll_improvement"] = lls[-1] - lls[0]

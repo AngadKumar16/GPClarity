@@ -26,41 +26,39 @@ logger = logging.getLogger(__name__)
 @dataclass(frozen=True)
 class InfluenceResult:
     """Container for influence computation results."""
+
     scores: np.ndarray
     method: str
     computation_time: float
     n_points: int
     metadata: Optional[Dict[str, Any]] = None
-    
+
     def __array__(self):
         """Allow numpy operations on result directly."""
         return self.scores
-    
+
     def __len__(self):
         return len(self.scores)
 
 
 def _validate_train_data(func: Callable) -> Callable:
     """Decorator to standardize training data validation."""
+
     def wrapper(
-        self, 
-        X_train: np.ndarray, 
-        y_train: Optional[np.ndarray] = None,
-        *args, 
-        **kwargs
+        self, X_train: np.ndarray, y_train: Optional[np.ndarray] = None, *args, **kwargs
     ):
         if X_train is None:
             raise ValueError("X_train cannot be None")
-            
+
         if not hasattr(X_train, "shape"):
             raise ValueError("X_train must be array-like with shape attribute")
-            
+
         if X_train.ndim != 2:
             raise ValueError(f"X_train must be 2D, got shape {X_train.shape}")
-            
+
         if X_train.shape[0] == 0:
             raise ValueError("X_train cannot be empty")
-            
+
         if y_train is not None:
             if y_train.shape[0] != X_train.shape[0]:
                 raise ValueError(
@@ -71,12 +69,12 @@ def _validate_train_data(func: Callable) -> Callable:
                 warnings.warn(
                     f"y_train should be 1D, got shape {y_train.shape}. "
                     "Flattening automatically.",
-                    UserWarning
+                    UserWarning,
                 )
                 y_train = y_train.ravel()
-                
+
         return func(self, X_train, y_train=y_train, *args, **kwargs)
-    
+
     return wrapper
 
 
@@ -106,7 +104,7 @@ class DataInfluenceMap:
             raise ValueError("Model must have predict() method")
         if not hasattr(model, "kern"):
             raise ValueError("Model must have 'kern' attribute")
-            
+
         self.model = model
         self._cache: Dict[str, Any] = {}
         self._cache_key: Optional[str] = None
@@ -116,18 +114,16 @@ class DataInfluenceMap:
         return f"{X.shape}_{hash(X.tobytes()) % (2**32)}"
 
     def _get_cached_kernel(
-        self, 
-        X: np.ndarray, 
-        noise_var: Optional[float] = None
+        self, X: np.ndarray, noise_var: Optional[float] = None
     ) -> Tuple[np.ndarray, np.ndarray, str]:
         """
         Retrieve or compute kernel matrix with Cholesky decomposition.
-        
+
         Returns:
             Tuple of (K, L, cache_key)
         """
         cache_key = self._get_cache_key(X)
-        
+
         if cache_key == self._cache_key and "K" in self._cache:
             logger.debug("Using cached kernel matrix")
             K = self._cache["K"]
@@ -136,21 +132,21 @@ class DataInfluenceMap:
             logger.debug("Computing new kernel matrix")
             K = self.model.kern.K(X, X)
             _validate_kernel_matrix(K)
-            
+
             if noise_var is None:
                 noise_var = float(self.model.Gaussian_noise.variance)
-                
+
             if not np.isfinite(noise_var) or noise_var < 0:
                 logger.warning(f"Invalid noise variance: {noise_var}, using fallback")
                 noise_var = 1e-6
-                
+
             K_stable = K + np.eye(K.shape[0]) * noise_var
             L = _cholesky_with_jitter(K_stable)
-            
+
             # Update cache
             self._cache = {"K": K, "L": L, "noise_var": noise_var}
             self._cache_key = cache_key
-            
+
         return K, L, cache_key
 
     def clear_cache(self) -> None:
@@ -161,11 +157,11 @@ class DataInfluenceMap:
 
     @_validate_train_data
     def compute_influence_scores(
-        self, 
+        self,
         X_train: np.ndarray,
         y_train: Optional[np.ndarray] = None,  # Add this parameter
         *,
-        use_cache: bool = True
+        use_cache: bool = True,
     ) -> InfluenceResult:
         """
         Compute influence scores using leverage scores (optimized O(n³)).
@@ -184,7 +180,7 @@ class DataInfluenceMap:
             InfluenceError: If computation fails
         """
         start_time = time.perf_counter()
-        
+
         try:
             # Get or compute kernel and Cholesky factor
             if use_cache:
@@ -197,7 +193,7 @@ class DataInfluenceMap:
                 L = _cholesky_with_jitter(K_stable)
 
             n = X_train.shape[0]
-            
+
             # Optimized leverage score computation: O(n³) instead of O(n⁴)
             # L @ L.T = K, solve for L_inv then K_inv = L_inv.T @ L_inv
             L_inv = solve_triangular(L, np.eye(n), lower=True)
@@ -205,20 +201,21 @@ class DataInfluenceMap:
             diag = np.diag(K_inv)
             scores = np.where(np.abs(diag) > 1e-12, 1.0 / diag, 0.0)
 
-            
             # Handle numerical edge cases
             if not np.all(np.isfinite(scores)):
                 n_invalid = np.sum(~np.isfinite(scores))
-                logger.warning(f"{n_invalid} influence scores are non-finite, clipping to 0")
+                logger.warning(
+                    f"{n_invalid} influence scores are non-finite, clipping to 0"
+                )
                 scores = np.where(np.isfinite(scores), scores, 0.0)
-                
+
             if np.any(scores < 0):
                 n_neg = np.sum(scores < 0)
                 logger.warning(f"{n_neg} negative influence scores found, setting to 0")
                 scores = np.maximum(scores, 0)
 
             computation_time = time.perf_counter() - start_time
-            
+
             return InfluenceResult(
                 scores=scores,
                 method="leverage",
@@ -228,9 +225,9 @@ class DataInfluenceMap:
                     "kernel_type": type(self.model.kern).__name__,
                     "noise_variance": float(self.model.Gaussian_noise.variance),
                     "cache_used": use_cache,
-                }
+                },
             )
-            
+
         except Exception as e:
             logger.error(f"Failed to compute influence scores: {e}")
             raise InfluenceError(f"Influence computation failed: {e}") from e
@@ -267,11 +264,11 @@ class DataInfluenceMap:
             # Pre-compute full covariance once
             K_full = self.model.kern.K(X_train, X_train)
             _validate_kernel_matrix(K_full)
-            
+
             noise_var = float(self.model.Gaussian_noise.variance)
             if not np.isfinite(noise_var):
                 raise InfluenceError(f"Invalid noise variance: {noise_var}")
-                
+
             K_full = K_full.copy()
             np.fill_diagonal(K_full, np.diag(K_full) + noise_var)
 
@@ -280,6 +277,7 @@ class DataInfluenceMap:
             if verbose:
                 try:
                     from tqdm import tqdm
+
                     iterator = tqdm(iterator, desc="Computing LOO")
                 except ImportError:
                     logger.warning("tqdm not installed, progress bar disabled")
@@ -293,13 +291,11 @@ class DataInfluenceMap:
                 variance_increase, prediction_errors = result
             else:
                 for i in iterator:
-                    result = self._compute_loo_point(
-                        i, X_train, y_train, K_full
-                    )
+                    result = self._compute_loo_point(i, X_train, y_train, K_full)
                     variance_increase[i], prediction_errors[i] = result
 
             return variance_increase, prediction_errors
-            
+
         except Exception as e:
             logger.error(f"Failed to compute LOO variance: {e}")
             raise InfluenceError(f"LOO computation failed: {e}") from e
@@ -314,39 +310,41 @@ class DataInfluenceMap:
         """Compute LOO metrics for single point."""
         n = X_train.shape[0]
         idx = np.arange(n) != i
-        
+
         try:
             # Extract sub-matrices
             K_loo = K_full[np.ix_(idx, idx)]
             k_star = K_full[np.ix_([i], idx)][0]
-            
+
             # Quick validation
             if np.any(~np.isfinite(K_loo)) or np.any(~np.isfinite(k_star)):
                 logger.warning(f"Non-finite values in LOO matrices for point {i}")
                 return np.nan, np.nan
-            
+
             # Cholesky with jitter if needed
             L = _cholesky_with_jitter(K_loo)
-            
+
             # Solve for variance without point i
             v = solve_triangular(L, k_star, lower=True)
             k_inv_k = np.dot(v, v)
             var_without_i = K_full[i, i] - k_inv_k
-            
+
             if var_without_i < 0:
-                logger.debug(f"Negative variance at point {i}: {var_without_i}, clamping to 0")
+                logger.debug(
+                    f"Negative variance at point {i}: {var_without_i}, clamping to 0"
+                )
                 var_without_i = 0
-                
+
             # Get model prediction with point i
-            mean_with_i, var_with_i = self.model.predict(X_train[i:i+1])
-            
+            mean_with_i, var_with_i = self.model.predict(X_train[i : i + 1])
+
             var_increase = max(0, var_without_i - float(var_with_i[0, 0]))
-            
+
             # Prediction error
             pred_error = abs(float(mean_with_i[0, 0]) - float(y_train[i]))
-            
+
             return var_increase, pred_error
-            
+
         except Exception as e:
             logger.debug(f"LOO failed for point {i}: {e}")
             return np.nan, np.nan
@@ -371,10 +369,12 @@ class DataInfluenceMap:
 
         n = X_train.shape[0]
         results = Parallel(n_jobs=n_jobs)(
-            delayed(self._compute_loo_point)(i, X_train, y_train, K_full, verbose=verbose)
+            delayed(self._compute_loo_point)(
+                i, X_train, y_train, K_full, verbose=verbose
+            )
             for i in iterator
         )
-        
+
         variance_increase = np.array([r[0] for r in results])
         prediction_errors = np.array([r[1] for r in results])
         return variance_increase, prediction_errors
@@ -404,18 +404,16 @@ class DataInfluenceMap:
         """
         # Deferred import to keep computation module lightweight
         from gpclarity.plotting import plot_influence_map
-        
+
         if isinstance(influence_scores, InfluenceResult):
             influence_scores = influence_scores.scores
-            
-        return plot_influence_map(
-            X_train, influence_scores, ax=ax, **scatter_kwargs
-        )
+
+        return plot_influence_map(X_train, influence_scores, ax=ax, **scatter_kwargs)
 
     @_validate_train_data
     def get_influence_report(
-        self, 
-        X_train: np.ndarray, 
+        self,
+        X_train: np.ndarray,
         y_train: np.ndarray,
         *,
         compute_loo: bool = True,
@@ -434,11 +432,11 @@ class DataInfluenceMap:
             Dictionary with influence statistics and diagnostics
         """
         start_time = time.perf_counter()
-        
+
         # Leverage scores (fast)
         leverage_result = self.compute_influence_scores(X_train, y_train=None)
         scores = leverage_result.scores
-    
+
         # LOO analysis (optional, slower)
         loo_var, loo_err = None, None
         if compute_loo:
@@ -448,21 +446,21 @@ class DataInfluenceMap:
                 )
             except Exception as e:
                 logger.warning(f"LOO computation skipped: {e}")
-        
+
         # Compute statistics on finite values
         finite_mask = np.isfinite(scores)
         finite_scores = scores[finite_mask]
-        
+
         if len(finite_scores) == 0:
             raise InfluenceError("No finite influence scores available")
-        
+
         # Percentile-based diagnostics
         p95 = np.percentile(finite_scores, 95)
         p5 = np.percentile(finite_scores, 5)
-        
+
         most_inf_idx = int(np.nanargmax(scores))
         least_inf_idx = int(np.nanargmin(scores))
-        
+
         report = {
             "computation_summary": {
                 "total_time": time.perf_counter() - start_time,
@@ -495,15 +493,17 @@ class DataInfluenceMap:
                 "non_finite_scores": int(np.sum(~finite_mask)),
             },
         }
-        
+
         # Add LOO results if available
         if loo_var is not None and loo_err is not None:
             finite_loo = loo_err[np.isfinite(loo_err)]
             report["loo_analysis"] = {
                 "variance_increase": loo_var.tolist(),
                 "prediction_errors": loo_err.tolist(),
-                "mean_error": float(np.mean(finite_loo)) if len(finite_loo) > 0 else None,
+                "mean_error": (
+                    float(np.mean(finite_loo)) if len(finite_loo) > 0 else None
+                ),
                 "max_error": float(np.max(finite_loo)) if len(finite_loo) > 0 else None,
             }
-            
+
         return report

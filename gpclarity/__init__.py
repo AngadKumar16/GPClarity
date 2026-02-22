@@ -18,7 +18,7 @@ __all__ = [
     "__version__",
     "AVAILABLE",
     "summarize_kernel",
-    "format_kernel_tree", 
+    "format_kernel_tree",
     "interpret_lengthscale",
     "interpret_variance",
     "UncertaintyProfiler",
@@ -44,7 +44,6 @@ if _GPY_AVAILABLE:
         get_lengthscale,
         get_noise_variance,
         count_kernel_components,
-
     )
     from .uncertainty_analysis import UncertaintyProfiler
     from .hyperparam_tracker import HyperparameterTracker
@@ -62,9 +61,12 @@ else:
     class _Stub:
         def __init__(self, name):
             self.name = name
+
         def __call__(self, *args, **kwargs):
-            raise ImportError(f"{self.name} requires GPy. Install: pip install gpclarity[full]")
-    
+            raise ImportError(
+                f"{self.name} requires GPy. Install: pip install gpclarity[full]"
+            )
+
     summarize_kernel = _Stub("summarize_kernel")
     format_kernel_tree = _Stub("format_kernel_tree")
     interpret_lengthscale = _Stub("interpret_lengthscale")
@@ -80,8 +82,11 @@ else:
     extract_kernel_params_flat = _Stub("extract_kernel_params_flat")
     get_lengthscale = _Stub("get_lengthscale")
     get_noise_variance = _Stub("get_noise_variance")
-    
-    warnings.warn("gpclarity running in limited mode. Install with 'pip install gpclarity[full]'", ImportWarning)
+
+    warnings.warn(
+        "gpclarity running in limited mode. Install with 'pip install gpclarity[full]'",
+        ImportWarning,
+    )
 
 __author__ = "Angad Kumar"
 __email__ = "angadkumar16ak@gmail.com"
