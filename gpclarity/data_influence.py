@@ -159,7 +159,7 @@ class DataInfluenceMap:
     def compute_influence_scores(
         self,
         X_train: np.ndarray,
-        y_train: Optional[np.ndarray] = None,  # Add this parameter
+        y_train: Optional[np.ndarray] = None,
         *,
         use_cache: bool = True,
     ) -> InfluenceResult:
