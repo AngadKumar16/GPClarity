@@ -50,3 +50,4 @@ Module Reference
    data_influence
    exceptions
    utils
+   plotting
