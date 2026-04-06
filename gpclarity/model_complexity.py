@@ -625,8 +625,16 @@ def quick_complexity_check(model: Any, X: np.ndarray) -> str:
     """
     One-line complexity assessment.
 
+    A convenience wrapper around :func:`compute_complexity_score` that returns
+    a single human-readable string. Useful for quick interactive inspection.
+
+    Args:
+        model: Trained GP model
+        X: Training data array
+
     Returns:
-        Human-readable complexity assessment string
+        String of the form ``"<CATEGORY>: <description> (log-score=<value>)"``,
+        or an error message if analysis fails.
     """
     try:
         result = compute_complexity_score(model, X)

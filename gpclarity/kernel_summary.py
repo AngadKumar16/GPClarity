@@ -279,6 +279,12 @@ def _print_kernel_summary(interpretation: Dict[str, Any]):
 def format_kernel_tree(model: GPy.models.GPRegression) -> str:
     """
     Pretty-print kernel tree structure using the original kernel names.
+
+    Args:
+        model: Trained GPy model with a ``kern`` attribute
+
+    Returns:
+        Multi-line string showing the kernel hierarchy with indentation
     """
     structure = get_kernel_structure(model.kern)
 
@@ -293,7 +299,15 @@ def format_kernel_tree(model: GPy.models.GPRegression) -> str:
 
 
 def count_kernel_components(kern: Any) -> int:
-    """Count total number of kernel components (leaf nodes)."""
+    """
+    Count total number of kernel components (leaf nodes).
+
+    Args:
+        kern: GPy kernel object (simple or composite)
+
+    Returns:
+        Total number of leaf kernel components
+    """
 
     def count_leaves(kernel: Any) -> int:
         if hasattr(kernel, "parts") and kernel.parts:
@@ -323,7 +337,20 @@ def _extract_values(param: Any) -> Union[float, List[float]]:
 
 def extract_kernel_params_flat(model: Any) -> Dict[str, float]:
     """
-    Extract all kernel parameters as flat dictionary with dotted paths.
+    Extract all kernel parameters as a flat dictionary with dotted paths.
+
+    Traverses the full kernel tree and returns every parameter with its
+    fully qualified path, e.g. ``"add.rbf.lengthscale"``.
+
+    Args:
+        model: GPy model with a ``kern`` attribute
+
+    Returns:
+        Dictionary mapping dotted parameter paths to scalar float values.
+        ARD parameters are expanded as ``"name[0]"``, ``"name[1]"``, etc.
+
+    Raises:
+        ValueError: If model has no ``kern`` attribute
     """
     if not hasattr(model, "kern"):
         raise ValueError("Model must have 'kern' attribute")
@@ -356,6 +383,21 @@ def get_lengthscale(
 ) -> Union[float, Dict[str, float]]:
     """
     Extract lengthscale(s) from model kernel.
+
+    Args:
+        model: GPy model with a ``kern`` attribute
+        as_dict: If ``True``, returns a mapping of kernel path → lengthscale
+                 for every component that has a lengthscale.
+                 If ``False`` (default), returns the scalar lengthscale of the
+                 top-level kernel.
+
+    Returns:
+        Single float when ``as_dict=False``, or a dict mapping kernel names to
+        their lengthscale values when ``as_dict=True``.
+
+    Raises:
+        ValueError: If model has no ``kern`` attribute, or the top-level kernel
+                    has no ``lengthscale`` attribute (only when ``as_dict=False``)
     """
     if not hasattr(model, "kern"):
         raise ValueError("Model must have 'kern' attribute")
@@ -381,7 +423,21 @@ def get_lengthscale(
 
 
 def get_noise_variance(model: Any) -> float:
-    """Extract noise variance from GP model."""
+    """
+    Extract noise variance from GP model.
+
+    Tries ``model.Gaussian_noise.variance`` first (GPy style), then falls
+    back to ``model.likelihood.variance``.
+
+    Args:
+        model: Trained GP model
+
+    Returns:
+        Noise variance as a scalar float
+
+    Raises:
+        ValueError: If noise variance cannot be found on the model
+    """
     if hasattr(model, "Gaussian_noise") and hasattr(model.Gaussian_noise, "variance"):
         return float(model.Gaussian_noise.variance)
     if hasattr(model, "likelihood") and hasattr(model.likelihood, "variance"):

@@ -1,10 +1,27 @@
-model_complexity module
-=======================
+Model Complexity
+================
 
 .. automodule:: gpclarity.model_complexity
    :members:
    :undoc-members:
    :show-inheritance:
+
+Enums & Configuration
+---------------------
+
+.. autosummary::
+   :nosignatures:
+
+   ComplexityCategory
+   ComplexityThresholds
+
+Data Classes
+------------
+
+.. autosummary::
+   :nosignatures:
+
+   ComplexityMetrics
 
 Classes
 -------
@@ -13,9 +30,6 @@ Classes
    :nosignatures:
 
    ComplexityAnalyzer
-   ComplexityMetrics
-   ComplexityThresholds
-   ComplexityCategory
 
 Functions
 ---------

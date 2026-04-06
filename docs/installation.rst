@@ -35,7 +35,7 @@ To install from source with development tools:
 
 .. code-block:: bash
 
-   git clone https://github.com/yourusername/gpclarity.git
+   git clone https://github.com/AngadKumar16/gpclarity.git
    cd gpclarity
    pip install -e ".[dev]"
 

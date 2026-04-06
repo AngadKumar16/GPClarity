@@ -88,7 +88,19 @@ class HyperparameterTracker:
         return len(self._history)
 
     def record_state(self, iteration: Optional[int] = None) -> OptimizationState:
-        """Snapshot current hyperparameter values."""
+        """
+        Snapshot current hyperparameter values.
+
+        Captures all model parameters plus log-likelihood and gradient norm
+        if the model exposes them.
+
+        Args:
+            iteration: Iteration number to label this state.
+                       Auto-incremented from current count if ``None``.
+
+        Returns:
+            :class:`OptimizationState` containing the captured snapshot
+        """
         params = {}
         for param in self.model.parameters:
             val = self._extract_param_value(param)
@@ -144,6 +156,31 @@ class HyperparameterTracker:
     ) -> List[OptimizationState]:
         """
         Perform optimization with intelligent tracking and early stopping.
+
+        Calls ``model.optimize(max_iters=1)`` in a loop, recording a state
+        snapshot every ``capture_every`` iterations and stopping early when the
+        log-likelihood does not improve by more than ``convergence_tolerance``
+        for ``patience`` consecutive capture steps.
+
+        Args:
+            max_iters: Maximum number of optimization iterations. Default: ``100``
+            callback: Optional callable invoked each iteration as
+                      ``callback(model, iteration, history)``.
+            capture_every: Record state every N iterations. Default: ``1``
+            convergence_tolerance: Minimum log-likelihood improvement required
+                to reset the patience counter. Default: ``1e-6``
+            patience: Iterations without improvement before early stopping.
+                Default: ``10``
+            **optimize_kwargs: Extra keyword arguments forwarded to
+                ``model.optimize()``.
+
+        Returns:
+            Optimization history as a dict mapping parameter names to lists of
+            recorded values (same as :attr:`history`).
+
+        Raises:
+            ValueError: If ``max_iters <= 0``
+            OptimizationError: If the underlying optimizer raises an exception
         """
         if max_iters <= 0:
             raise ValueError(f"max_iters must be positive, got {max_iters}")
@@ -320,7 +357,20 @@ class HyperparameterTracker:
             )
 
     def detect_optimization_issues(self) -> Dict[str, Any]:
-        """Detect common optimization problems."""
+        """
+        Detect common optimization problems in the recorded history.
+
+        Checks for NaN/Inf parameter values, parameter oscillation, and
+        decreasing log-likelihood.
+
+        Returns:
+            Dictionary with keys:
+
+            - ``warnings`` (List[str]): Detected problems
+            - ``recommendations`` (List[str]): Suggested fixes
+            - ``metrics`` (Dict[str, Any]): Numeric diagnostics such as
+              ``ll_improvement`` and ``final_ll``
+        """
         issues = {"warnings": [], "recommendations": [], "metrics": {}}
 
         if not self._history:
@@ -375,6 +425,22 @@ class HyperparameterTracker:
     ) -> "plt.Figure":
         """
         Plot parameter trajectories with optional convergence indicators.
+
+        Args:
+            params: Parameter names to include. Plots all parameters if ``None``.
+            figsize: Figure size ``(width, height)`` in inches.
+                     Auto-sized based on number of parameters if ``None``.
+            show_convergence: Overlay convergence band (±1 std of final window)
+                on each subplot. Default: ``True``
+            show_ll: Add a subplot for the log-likelihood trajectory.
+                Default: ``True``
+            n_cols: Number of columns in the subplot grid. Default: ``2``
+
+        Returns:
+            :class:`matplotlib.figure.Figure` containing all subplots
+
+        Raises:
+            TrackingError: If no optimization history has been recorded
         """
         from gpclarity.plotting import plot_optimization_trajectory
 
@@ -393,7 +459,20 @@ class HyperparameterTracker:
         )
 
     def to_dataframe(self) -> "pd.DataFrame":
-        """Export history to pandas DataFrame for analysis."""
+        """
+        Export optimization history to a :class:`pandas.DataFrame`.
+
+        Each row represents one recorded :class:`OptimizationState`. Multi-
+        dimensional parameters are expanded into separate columns named
+        ``"<param>_0"``, ``"<param>_1"``, etc.
+
+        Returns:
+            DataFrame with columns: ``iteration``, ``log_likelihood``,
+            ``gradient_norm``, ``timestamp``, and one column per parameter.
+
+        Raises:
+            ImportError: If ``pandas`` is not installed
+        """
         try:
             import pandas as pd
         except ImportError as e:

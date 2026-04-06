@@ -42,7 +42,6 @@ Module Reference
 .. toctree::
    :maxdepth: 1
 
-   gpclarity
    kernel_summary
    uncertainty_analysis
    model_complexity

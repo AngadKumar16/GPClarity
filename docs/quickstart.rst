@@ -127,7 +127,7 @@ Analyze Data Influence
    
    # Get comprehensive report
    report = influence.get_influence_report(X, y)
-   print(f"Most influential point: index {report['most_influential']['index']}")
+   print(f"Most influential point: index {report['most_influential_point']['index']}")
    
    # Visualize
    influence.plot_influence(X, result)

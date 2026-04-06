@@ -1,5 +1,5 @@
-data_influence module
-=====================
+Data Influence
+==============
 
 .. automodule:: gpclarity.data_influence
    :members:
@@ -14,12 +14,3 @@ Classes
 
    DataInfluenceMap
    InfluenceResult
-   OptimizationState
-
-Exceptions
-----------
-
-.. autosummary::
-   :nosignatures:
-
-   InfluenceError

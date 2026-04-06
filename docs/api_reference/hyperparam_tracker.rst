@@ -1,5 +1,5 @@
-hyperparam_tracker module
-=========================
+Hyperparameter Tracker
+======================
 
 .. automodule:: gpclarity.hyperparam_tracker
    :members:
@@ -15,11 +15,3 @@ Classes
    HyperparameterTracker
    OptimizationState
    ConvergenceMetrics
-
-Functions
----------
-
-.. autosummary::
-   :nosignatures:
-
-   (none - all functionality via HyperparameterTracker class)
