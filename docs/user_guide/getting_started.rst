@@ -66,9 +66,10 @@ Create an ``UncertaintyProfiler`` to examine where the model is confident:
 
    # Summarize uncertainty behavior
    diagnostics = profiler.compute_diagnostics(X_test)
-   print(f"Mean uncertainty: {diagnostics.mean_uncertainty:.4f}")
-   print(f"Extrapolation points: {diagnostics.n_extrapolation_points}")
-   print(f"Well calibrated: {diagnostics.is_well_calibrated}")
+   print(f"Mean uncertainty: {diagnostics['mean_uncertainty']:.4f}")
+   print(f"Extrapolation points: {diagnostics['n_extrapolation_points']}")
+   cv = diagnostics['coefficient_of_variation']
+   print(f"Well calibrated: {0.1 < cv < 10.0}")
 
    # Plot with confidence intervals
    profiler.plot(X_test, X_train=X, y_train=y)
@@ -105,8 +106,8 @@ Assess whether your model is appropriately complex:
    print(f"Score: {report['score']:.2f}  ({report['interpretation']})")
    print(f"Components: {report['components']}")
 
-   for suggestion in report['suggestions']:
-       print(f"  Suggestion: {suggestion}")
+   for rec in report['recommendations']:
+       print(f"  Recommendation: {rec}")
 
 Analyzing Data Influence
 ------------------------

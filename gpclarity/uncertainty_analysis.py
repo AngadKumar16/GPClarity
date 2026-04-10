@@ -224,7 +224,7 @@ class UncertaintyProfiler:
         self,
         X_test: np.ndarray,
         force_recompute: bool = False,
-    ) -> UncertaintyDiagnostics:
+    ) -> Dict[str, Any]:
         """
         Compute comprehensive spatial uncertainty metrics.
 
@@ -526,7 +526,8 @@ class UncertaintyProfiler:
         # Generate recommendations
         recommendations = []
 
-        if diagnostics.coefficient_of_variation > 5.0:
+        cv = diagnostics["coefficient_of_variation"]
+        if cv > 5.0:
             recommendations.append(
                 "High uncertainty variance: consider adaptive sampling"
             )
@@ -536,30 +537,32 @@ class UncertaintyProfiler:
                 "More than 50% high uncertainty: model needs more data"
             )
 
-        if diagnostics.n_extrapolation_points > 0:
+        n_extrap = diagnostics["n_extrapolation_points"]
+        if n_extrap > 0:
             recommendations.append(
-                f"{diagnostics.n_extrapolation_points} extrapolation points: "
+                f"{n_extrap} extrapolation points: "
                 "predictions unreliable in these regions"
             )
 
-        if not diagnostics.is_well_calibrated:
+        is_well_calibrated = 0.1 < cv < 10.0
+        if not is_well_calibrated:
             recommendations.append(
                 "Uncertainty distribution unusual: check model specification"
             )
 
         return {
             "diagnostics": {
-                "mean_uncertainty": diagnostics.mean_uncertainty,
+                "mean_uncertainty": diagnostics["mean_uncertainty"],
                 "uncertainty_range": [
-                    diagnostics.min_uncertainty,
-                    diagnostics.max_uncertainty,
+                    diagnostics["min_uncertainty"],
+                    diagnostics["max_uncertainty"],
                 ],
-                "high_uncertainty_ratio": diagnostics.high_uncertainty_ratio,
-                "extrapolation_points": diagnostics.n_extrapolation_points,
+                "high_uncertainty_ratio": diagnostics["high_uncertainty_ratio"],
+                "extrapolation_points": n_extrap,
             },
             "regions": regions.get("region_breakdown", {}),
             "recommendations": recommendations,
-            "well_specified": diagnostics.is_well_calibrated,
+            "well_specified": is_well_calibrated,
         }
 
     def clear_cache(self) -> None:
@@ -641,11 +644,13 @@ def quick_uncertainty_check(
         profiler = UncertaintyProfiler(model, X_train=X_train)
         diag = profiler.compute_diagnostics(X_test)
 
-        status = "Well-calibrated" if diag.is_well_calibrated else "Poorly-calibrated"
+        cv = diag["coefficient_of_variation"]
+        is_well_calibrated = 0.1 < cv < 10.0
+        status = "Well-calibrated" if is_well_calibrated else "Poorly-calibrated"
         return (
-            f"{status}: mean σ²={diag.mean_uncertainty:.3e}, "
-            f"CV={diag.coefficient_of_variation:.2f}, "
-            f"{diag.n_extrapolation_points} extrapolation points"
+            f"{status}: mean σ²={diag['mean_uncertainty']:.3e}, "
+            f"CV={cv:.2f}, "
+            f"{diag['n_extrapolation_points']} extrapolation points"
         )
     except Exception as e:
         return f"Uncertainty check failed: {e}"

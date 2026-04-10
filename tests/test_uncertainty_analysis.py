@@ -48,4 +48,4 @@ class TestUncertaintyProfiler:
         assert "high_uncertainty_points" in regions
         assert "low_uncertainty_points" in regions
         assert "threshold" in regions
-        assert len(regions["high_uncertainty_points"]) > 0
+        assert len(regions["high_uncertainty_points"]["points"]) > 0

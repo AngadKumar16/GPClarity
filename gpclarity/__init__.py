@@ -1,5 +1,71 @@
 """
 gpclarity: Interpretability Toolkit for Gaussian Processes
+===========================================================
+
+GPClarity makes Gaussian Process models transparent and debuggable by
+providing human-readable diagnostics across five areas:
+
+Kernel Interpretation
+---------------------
+- ``summarize_kernel(model)``           — structured human-readable kernel summary
+- ``format_kernel_tree(model)``         — ASCII tree of kernel hierarchy
+- ``interpret_lengthscale(ls)``         — plain-language lengthscale interpretation
+- ``interpret_variance(var)``           — plain-language variance interpretation
+- ``extract_kernel_params_flat(model)`` — all hyperparameters as a flat dict
+- ``get_lengthscale(model)``            — scalar or per-component lengthscale
+- ``get_noise_variance(model)``         — noise variance scalar
+- ``count_kernel_components(kern)``     — count of leaf kernel components
+
+Uncertainty Analysis
+--------------------
+- ``UncertaintyProfiler(model)``        — profile, calibrate, and visualize uncertainty
+  - ``.predict(X_test)``               → PredictionResult with mean, variance, intervals
+  - ``.compute_diagnostics(X_test)``   → dict of spatial uncertainty statistics
+  - ``.identify_uncertainty_regions()``→ high/low uncertainty point sets
+  - ``.classify_regions(X_test)``      → per-point INTERPOLATION/EXTRAPOLATION labels
+  - ``.calibrate_uncertainty()``       → scale uncertainty to match validation coverage
+  - ``.get_summary(X_test)``           → full summary with recommendations
+  - ``.plot(X_test)``                  → confidence band plot
+
+Hyperparameter Tracking
+-----------------------
+- ``HyperparameterTracker(model)``      — track optimization trajectories
+  - ``.wrapped_optimize()``            → optimize with early stopping + history
+  - ``.get_convergence_report()``      → per-parameter convergence statistics
+  - ``.detect_optimization_issues()``  → NaN, oscillation, and LL degradation checks
+  - ``.plot_evolution()``              → parameter trajectory plots
+  - ``.to_dataframe()``               → export history to pandas DataFrame
+
+Model Complexity
+----------------
+- ``compute_complexity_score(model, X)``— composite score with category and recommendations
+- ``compute_roughness_score(kern)``     — inverse-lengthscale roughness metric
+- ``compute_noise_ratio(model)``        — signal-to-noise ratio
+
+Data Influence
+--------------
+- ``DataInfluenceMap(model)``           — identify high-leverage training points
+  - ``.compute_influence_scores()``    → leverage-score influence per point
+  - ``.compute_loo_variance_increase()``→ exact leave-one-out variance impact
+  - ``.get_influence_report()``        → comprehensive influence analysis report
+  - ``.plot_influence()``              → scatter visualization of influence scores
+
+Utilities
+---------
+- ``check_model_health(model)``         — validate model before analysis
+
+Quick start::
+
+    import gpclarity, GPy, numpy as np
+
+    X = np.linspace(0, 10, 50).reshape(-1, 1)
+    y = np.sin(X).flatten() + 0.1 * np.random.randn(50)
+    model = GPy.models.GPRegression(X, y[:, None], GPy.kern.RBF(1))
+    model.optimize()
+
+    gpclarity.summarize_kernel(model)
+    profiler = gpclarity.UncertaintyProfiler(model, X_train=X)
+    profiler.plot(np.linspace(-2, 12, 200).reshape(-1, 1), X_train=X, y_train=y)
 """
 
 import warnings

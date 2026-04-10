@@ -26,29 +26,22 @@ Train a GP and get instant insights:
    print(gpclarity.summarize_kernel(model, verbose=True))
    
 Output::
-   
-   ╔══════════════════════════════════════════════════════════╗
-   ║                    KERNEL SUMMARY                        ║
-   ╚══════════════════════════════════════════════════════════╝
-   
-   Configuration:
+
+    KERNEL SUMMARY
+   ==================================================
+   Structure: ['rbf', 'white']
+
+   Thresholds:
      Lengthscale: rapid<0.5, smooth>2.0
      Variance: very_low<0.01, high>10.0
-   
-   Structure:
-   └── add
-       ├── rbf (RBF)
-       └── white (White)
-   
-   Components:
-   【RBF】 parts[0]
-     ├─ lengthscale: 1.2345
-     ├─ variance: 0.9876
-     └─ Moderate flexibility (1.23). Well-balanced flexibility.
-   
-   【White】 parts[1]
-     ├─ variance: 0.0101
-     └─ Very low noise (≈0.010).
+
+    rbf (parts[0])
+     └─ lengthscale: 1.2345
+       Moderate flexibility (1.23)
+
+    white (parts[1])
+     └─ variance: 0.0101
+       Very low noise (≈0.010)
 
 Common Workflows
 ----------------
@@ -80,7 +73,7 @@ Analyze Uncertainty
    
    # Get diagnostics
    diag = profiler.compute_diagnostics(X_test)
-   print(f"Extrapolation points: {diag.n_extrapolation_points}")
+   print(f"Extrapolation points: {diag['n_extrapolation_points']}")
    # > Extrapolation points: 40
    
    # Visualize
@@ -105,7 +98,7 @@ Track Optimization
    # Check convergence
    report = tracker.get_convergence_report()
    for param, metrics in report.items():
-       print(f"{param}: {'✓ converged' if metrics.is_converged else '✗ not converged'}")
+       print(f"{param}: {'✓ converged' if metrics['is_converged'] else '✗ not converged'}")
    
    # Plot trajectories
    fig = tracker.plot_evolution()

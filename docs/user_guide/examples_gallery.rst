@@ -61,7 +61,7 @@ Calibrate model uncertainty using a held-out validation set:
    y_val = np.sin(X_val).flatten() + 0.1 * np.random.randn(20)
 
    cal = profiler.calibrate_uncertainty(X_val, y_val, method="scaling")
-   print(f"Optimal sigma scale: {cal.get('sigma_scale', 1.0):.3f}")
+   print(f"Optimal sigma scale: {cal.get('optimal_scale', 1.0):.3f}")
    print(f"Miscalibration: {cal.get('miscalibration', 0.0):.4f}")
 
 Comparing Multiple Models
@@ -81,7 +81,7 @@ Rank models by uncertainty quality side-by-side:
 
    profiles = compare_uncertainty_profiles(models, X_test, X_train=X)
    for name, diag in profiles.items():
-       print(f"{name}: mean_var={diag.mean_uncertainty:.4f}, CV={diag.coefficient_of_variation:.2f}")
+       print(f"{name}: mean_var={diag['mean_uncertainty']:.4f}, CV={diag['coefficient_of_variation']:.2f}")
 
 Optimization Issue Detection
 -----------------------------

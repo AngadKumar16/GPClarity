@@ -44,6 +44,13 @@ Model complexity and capacity metrics.
 
 .. autofunction:: compute_noise_ratio
 
+gpclarity.utils
+---------------
+
+Model validation and numerical utilities.
+
+.. currentmodule:: gpclarity.utils
+
 .. autofunction:: check_model_health
 
 gpclarity.data_influence
