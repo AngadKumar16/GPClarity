@@ -50,6 +50,14 @@ class InterpretationConfig:
     variance: VarianceThresholds = None
 
     def __post_init__(self):
+        """Apply defaults and validate sub-configs.
+
+        Sets ``lengthscale`` and ``variance`` to default threshold instances
+        if ``None`` is passed, then validates each is internally consistent.
+
+        Raises:
+            ValueError: If any threshold set fails validation.
+        """
         if self.lengthscale is None:
             self.lengthscale = LengthscaleThresholds()
         if self.variance is None:

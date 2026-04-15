@@ -29,6 +29,12 @@ class ComplexityCategory(Enum):
 
     @property
     def description(self) -> str:
+        """Human-readable description of this complexity category.
+
+        Returns:
+            Short sentence describing the category and its risk, e.g.
+            ``"Well-balanced complexity"`` for ``MODERATE``.
+        """
         descriptions = {
             ComplexityCategory.TOO_SIMPLE: "Overly simplistic (high underfitting risk)",
             ComplexityCategory.SIMPLE: "Simple model (possible underfitting)",
@@ -40,6 +46,11 @@ class ComplexityCategory(Enum):
 
     @property
     def risk_level(self) -> str:
+        """Categorical risk level for this complexity category.
+
+        Returns:
+            One of ``"LOW"``, ``"MEDIUM"``, or ``"HIGH"``.
+        """
         levels = {
             ComplexityCategory.TOO_SIMPLE: "HIGH",
             ComplexityCategory.SIMPLE: "MEDIUM",
@@ -67,6 +78,12 @@ class ComplexityThresholds:
     jitter: float = 1e-10
 
     def __post_init__(self):
+        """Validate that thresholds are strictly increasing and jitter is positive.
+
+        Raises:
+            ValueError: If ``too_simple``, ``simple``, ``complex``,
+                ``too_complex`` are not strictly ascending, or ``jitter`` ≤ 0.
+        """
         # Validate ordering
         thresholds = [self.too_simple, self.simple, self.complex, self.too_complex]
         if not all(t < u for t, u in zip(thresholds, thresholds[1:])):
@@ -75,7 +92,14 @@ class ComplexityThresholds:
             raise ValueError("jitter must be positive")
 
     def categorize(self, log_score: float) -> ComplexityCategory:
-        """Categorize complexity based on log score."""
+        """Map a log10 complexity score to a :class:`ComplexityCategory`.
+
+        Args:
+            log_score: Complexity score in log10 space.
+
+        Returns:
+            The corresponding :class:`ComplexityCategory` enum member.
+        """
         if log_score < self.too_simple:
             return ComplexityCategory.TOO_SIMPLE
         elif log_score < self.simple:
@@ -104,12 +128,22 @@ class ComplexityMetrics:
 
     @property
     def is_well_specified(self) -> bool:
-        """Check if model complexity is appropriate."""
+        """Whether the model complexity is appropriate for the data.
+
+        Returns:
+            True if ``category`` is :attr:`ComplexityCategory.MODERATE`.
+        """
         return self.category == ComplexityCategory.MODERATE
 
     @property
     def risk_factors(self) -> List[str]:
-        """Identify specific risk factors."""
+        """Active risk factors derived from this model's complexity metrics.
+
+        Returns:
+            List of human-readable risk strings. Empty list means no risks
+            detected. Possible entries cover underfitting, overfitting, high
+            noise, and high memorisation capacity.
+        """
         risks = []
         if self.category in (ComplexityCategory.TOO_SIMPLE, ComplexityCategory.SIMPLE):
             risks.append("Underfitting risk: model may be too restrictive")
@@ -147,6 +181,7 @@ class ComplexityAnalyzer:
     _strategies: Dict[str, ComplexityScorer] = field(default_factory=dict, repr=False)
 
     def __post_init__(self):
+        """Register default scoring strategies if the strategy registry is empty."""
         if not self._strategies:
             self._register_default_strategies()
 
@@ -501,7 +536,21 @@ def compute_noise_ratio(model: Any) -> float:
 
 
 def _extract_signal_variance(model: Any) -> float:
-    """Extract signal variance from model kernel."""
+    """Extract signal variance from the model kernel.
+
+    Tries ``kern.variance`` first, then sums ``part.variance`` over
+    composite kernel parts, then falls back to the mean diagonal of a
+    small kernel matrix evaluated at a dummy input.
+
+    Args:
+        model: GP model with a ``kern`` attribute.
+
+    Returns:
+        Signal variance as a positive float. Defaults to 1.0 on failure.
+
+    Raises:
+        ComplexityError: If the model has no ``kern`` attribute.
+    """
     if not hasattr(model, "kern"):
         raise ComplexityError("Model has no kernel")
 
@@ -540,7 +589,17 @@ def _extract_signal_variance(model: Any) -> float:
 
 
 def _extract_noise_variance(model: Any) -> float:
-    """Extract noise variance from model likelihood."""
+    """Extract noise variance from the model likelihood.
+
+    Tries ``model.Gaussian_noise.variance`` (GPy convention) then
+    ``model.likelihood.variance`` as a fallback.
+
+    Args:
+        model: GP model with a likelihood or Gaussian_noise attribute.
+
+    Returns:
+        Noise variance as a positive float. Defaults to 0.1 on failure.
+    """
     # Try Gaussian_noise attribute (GPy style)
     if hasattr(model, "Gaussian_noise"):
         if hasattr(model.Gaussian_noise, "variance"):
@@ -563,7 +622,16 @@ def _extract_noise_variance(model: Any) -> float:
 
 
 def _generate_recommendations(metrics: ComplexityMetrics) -> List[str]:
-    """Generate actionable recommendations based on metrics."""
+    """Generate actionable recommendations from a :class:`ComplexityMetrics` object.
+
+    Args:
+        metrics: Populated complexity metrics dataclass.
+
+    Returns:
+        List of actionable strings covering category-level advice plus
+        signal-to-noise and capacity-specific guidance. Empty if the
+        model is well-specified with no additional risk factors.
+    """
     recs = []
 
     if metrics.category == ComplexityCategory.TOO_SIMPLE:
@@ -616,7 +684,16 @@ def _generate_recommendations(metrics: ComplexityMetrics) -> List[str]:
 def check_variance_reasonable(
     variance: float, max_val: float = 1e6, min_val: float = 0.0
 ) -> bool:
-    """Check if variance is within reasonable bounds."""
+    """Check whether a variance value is within reasonable numeric bounds.
+
+    Args:
+        variance: The variance value to check.
+        max_val: Exclusive upper bound. Default ``1e6``.
+        min_val: Exclusive lower bound. Default ``0.0``.
+
+    Returns:
+        True if ``min_val < variance < max_val``.
+    """
     return min_val < variance < max_val
 
 

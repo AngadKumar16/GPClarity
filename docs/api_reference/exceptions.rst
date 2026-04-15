@@ -1,6 +1,21 @@
 Exceptions
 ==========
 
+All GPClarity exceptions inherit from :class:`GPClarityError`. Catch it to
+handle any library error in a single ``except`` block, or catch a more specific
+subclass when you want targeted recovery.
+
+.. code-block:: python
+
+   from gpclarity.exceptions import GPClarityError, InfluenceError
+
+   try:
+       result = influence.compute_loo_variance_increase(X_train)
+   except InfluenceError as e:
+       print(f"LOO computation failed: {e}")
+   except GPClarityError as e:
+       print(f"Unexpected GPClarity error: {e}")
+
 .. automodule:: gpclarity.exceptions
    :members:
    :undoc-members:

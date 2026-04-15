@@ -1,38 +1,40 @@
 Utilities
 =========
 
+The ``utils`` module provides shared numerical helpers used internally by all
+GPClarity modules, plus :func:`check_model_health` — the only public, stable
+export from this module. Call ``check_model_health`` before running any analysis
+to confirm that the model has finite parameters and a computable log-likelihood.
+
+Private helpers (``_cholesky_with_jitter``, ``_validate_array``, etc.) are
+implementation details and may change without a deprecation notice.
+
+.. code-block:: python
+
+   import gpclarity
+
+   health = gpclarity.check_model_health(model)
+   if not health["healthy"]:
+       for issue in health["issues"]:
+           print("ERROR:", issue)
+   for w in health["warnings"]:
+       print("WARN:", w)
+
 .. automodule:: gpclarity.utils
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. warning::
-   These utilities are not part of the stable public API and may change
-   without deprecation warnings.
-
-Exceptions
+Public API
 ^^^^^^^^^^
 
 .. autosummary::
    :nosignatures:
 
-   ComplexityError
-   LinAlgError
-
-Complexity Functions
-^^^^^^^^^^^^^^^^^^^^
-
-.. autosummary::
-   :nosignatures:
-
-   count_kernel_components
-   compute_roughness_score
-   compute_noise_ratio
-   compute_complexity_score
    check_model_health
 
-Validation Functions
-^^^^^^^^^^^^^^^^^^^^
+Internal Helpers
+^^^^^^^^^^^^^^^^
 
 .. autosummary::
    :nosignatures:
@@ -41,11 +43,4 @@ Validation Functions
    _validate_kernel_matrix
    _validate_convergence_window
    _cholesky_with_jitter
-
-Parameter Extraction
-^^^^^^^^^^^^^^^^^^^^
-
-.. autosummary::
-   :nosignatures:
-
    _extract_param_value

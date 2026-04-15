@@ -71,7 +71,16 @@ class HyperparameterTracker:
 
     @property
     def history(self) -> Dict[str, List[float]]:
-        """Dict format for compatibility."""
+        """Hyperparameter history as a flat dict keyed by parameter name.
+
+        Aggregates all recorded :class:`OptimizationState` snapshots into a
+        dict mapping parameter name → list of scalar values (one per
+        recorded iteration). For ARD parameters with multiple values, only
+        the first element is stored.
+
+        Returns:
+            Dict mapping parameter name (str) to a list of floats.
+        """
         result: Dict[str, List[float]] = {}
         for state in self._history:
             for name, val in state.parameters.items():
@@ -84,7 +93,11 @@ class HyperparameterTracker:
 
     @property
     def iteration_count(self) -> int:
-        """Get current iteration count."""
+        """Number of optimization states recorded so far.
+
+        Returns:
+            Integer count of snapshots in the internal history list.
+        """
         return len(self._history)
 
     def record_state(self, iteration: Optional[int] = None) -> OptimizationState:
@@ -132,7 +145,15 @@ class HyperparameterTracker:
 
     @staticmethod
     def _extract_param_value(param: Any) -> Union[float, np.ndarray]:
-        """Safely extract scalar or array value from GPy parameter."""
+        """Safely extract a scalar or array value from a GPy parameter.
+
+        Args:
+            param: GPy parameter with a ``param_array`` attribute.
+
+        Returns:
+            A scalar ``float`` for single-element arrays, otherwise a copy
+            of the full numpy array.
+        """
         val = param.param_array
 
         if val is None:
@@ -347,7 +368,15 @@ class HyperparameterTracker:
 
     @staticmethod
     def _validate_convergence_window(window: int, history_length: int) -> None:
-        """Validate window size for convergence analysis."""
+        """Validate that a convergence analysis window size is usable.
+
+        Args:
+            window: Requested window size in iterations.
+            history_length: Total number of recorded iterations.
+
+        Raises:
+            ValueError: If ``window`` ≤ 0 or ``window`` > ``history_length // 2``.
+        """
         if window <= 0:
             raise ValueError(f"Window must be positive, got {window}")
         if window > history_length // 2:

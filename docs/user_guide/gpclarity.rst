@@ -49,4 +49,4 @@ Version
 
 .. code-block:: python
 
-   print(gpclarity.__version__)  # e.g. "0.1.2"
+   print(gpclarity.__version__)  # e.g. "0.1.3"

@@ -4,7 +4,7 @@ Installation
 Requirements
 ------------
 
-GPClarity requires Python 3.8 or later. The core library has minimal dependencies, but full functionality requires GPy.
+GPClarity requires Python 3.9 or later. The core library has minimal dependencies, but full functionality requires GPy.
 
 Basic Installation
 ------------------
@@ -16,17 +16,6 @@ For analysis and lightweight usage:
    pip install gpclarity
 
 This installs the core interpretability tools without heavy scientific computing dependencies.
-
-Full Installation
------------------
-
-For complete functionality including GP model training:
-
-.. code-block:: bash
-
-   pip install gpclarity[full]
-
-This installs GPy and emukit dependencies.
 
 Development Installation
 ------------------------
@@ -43,14 +32,18 @@ Dependencies
 ------------
 
 Core dependencies:
+
 - numpy >= 1.20
 - scipy >= 1.7
+- GPy >= 1.10
 
-Optional dependencies:
-- GPy >= 1.10 (for GP modeling)
-- emukit >= 0.4 (for advanced features)
-- matplotlib >= 3.4 (for plotting)
-- pandas >= 1.3 (for DataFrame export)
+Optional dependencies (install separately as needed):
+
+- matplotlib >= 3.4 — required for all plot methods
+- pandas >= 1.3 — required for ``HyperparameterTracker.to_dataframe()``
+- joblib — enables parallel LOO computation in ``DataInfluenceMap``
+- tqdm — shows progress bars during LOO computation
+- scikit-learn — used for nearest-neighbour extrapolation detection
 
 Verifying Installation
 ----------------------

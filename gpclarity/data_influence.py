@@ -38,11 +38,28 @@ class InfluenceResult:
         return self.scores
 
     def __len__(self):
+        """Return the number of influence scores (one per training point)."""
         return len(self.scores)
 
 
 def _validate_train_data(func: Callable) -> Callable:
-    """Decorator to standardize training data validation."""
+    """Validate ``X_train`` (and optionally ``y_train``) before calling the wrapped method.
+
+    Enforces: ``X_train`` is not None, is 2-D, and non-empty. If
+    ``y_train`` is provided, checks shape compatibility and warns then
+    flattens non-1D inputs automatically.
+
+    Args:
+        func: Method to wrap; must accept
+            ``(self, X_train, y_train, *args, **kwargs)``.
+
+    Returns:
+        Wrapped callable with validated inputs.
+
+    Raises:
+        ValueError: If ``X_train`` is None, not 2-D, empty, or if
+            ``y_train`` has a mismatched number of rows.
+    """
 
     def wrapper(
         self, X_train: np.ndarray, y_train: Optional[np.ndarray] = None, *args, **kwargs
@@ -110,7 +127,14 @@ class DataInfluenceMap:
         self._cache_key: Optional[str] = None
 
     def _get_cache_key(self, X: np.ndarray) -> str:
-        """Generate unique cache key for input data."""
+        """Generate a unique string cache key for input array ``X``.
+
+        Args:
+            X: 2-D input array.
+
+        Returns:
+            String encoding ``X.shape`` and a 32-bit hash of the raw bytes.
+        """
         return f"{X.shape}_{hash(X.tobytes()) % (2**32)}"
 
     def _get_cached_kernel(
@@ -307,7 +331,22 @@ class DataInfluenceMap:
         y_train: np.ndarray,
         K_full: np.ndarray,
     ) -> Tuple[float, float]:
-        """Compute LOO metrics for single point."""
+        """Compute leave-one-out variance increase and prediction error for point ``i``.
+
+        Removes point ``i`` from the Cholesky system using pre-computed
+        sub-matrices and measures the variance the full model gains from
+        that observation.
+
+        Args:
+            i: Index of the point to leave out (0-based).
+            X_train: Full training inputs of shape ``(n, d)``.
+            y_train: Training targets of shape ``(n,)``.
+            K_full: Pre-computed full kernel matrix of shape ``(n, n)``.
+
+        Returns:
+            Tuple ``(variance_increase, prediction_error)`` of non-negative
+            floats. Returns ``(nan, nan)`` if the system is ill-conditioned.
+        """
         n = X_train.shape[0]
         idx = np.arange(n) != i
 
@@ -358,7 +397,24 @@ class DataInfluenceMap:
         iterator,
         verbose: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """Parallel LOO computation using joblib."""
+        """Run :meth:`_compute_loo_point` in parallel using ``joblib``.
+
+        Falls back to sequential computation with a warning if ``joblib``
+        is not installed.
+
+        Args:
+            X_train: Full training inputs of shape ``(n, d)``.
+            y_train: Training targets of shape ``(n,)``.
+            K_full: Pre-computed full kernel matrix of shape ``(n, n)``.
+            n_jobs: Number of parallel workers for ``joblib.Parallel``.
+            iterator: Iterable of integer indices to process (supports tqdm
+                wrapping for progress display).
+            verbose: If True, enables verbose joblib output.
+
+        Returns:
+            Tuple of arrays ``(variance_increase, prediction_errors)``, each
+            of length equal to the number of indices in ``iterator``.
+        """
         try:
             from joblib import Parallel, delayed
         except ImportError:

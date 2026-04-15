@@ -1,8 +1,10 @@
 API Reference
 =============
 
-.. autosummary::
-   :toctree: generated
-   :recursive:
+The full API reference is organized by module. See :doc:`api_reference/index`
+for the complete listing.
 
-   gpclarity
+.. toctree::
+   :hidden:
+
+   api_reference/index

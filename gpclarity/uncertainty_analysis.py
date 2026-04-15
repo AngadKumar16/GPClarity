@@ -52,6 +52,13 @@ class UncertaintyConfig:
     numerical_jitter: float = 1e-9
 
     def __post_init__(self):
+        """Validate configuration parameters on initialization.
+
+        Raises:
+            ValueError: If ``min_variance`` ≤ 0, ``max_variance`` ≤
+                ``min_variance``, ``default_confidence_level`` ≤ 0, or
+                ``high_uncertainty_percentile`` is outside (0, 100).
+        """
         if self.min_variance <= 0:
             raise ValueError("min_variance must be positive")
         if self.max_variance <= self.min_variance:
@@ -84,7 +91,16 @@ class UncertaintyDiagnostics:
 
     @property
     def is_well_calibrated(self) -> bool:
-        """Check if uncertainty distribution looks reasonable."""
+        """Whether the uncertainty distribution appears well-calibrated.
+
+        Uses coefficient of variation (std / mean) as a scale-free proxy.
+        A CV between 0.1 and 10.0 is considered reasonable; values outside
+        that range suggest the uncertainty scale may need adjustment via
+        :meth:`~gpclarity.UncertaintyProfiler.calibrate_uncertainty`.
+
+        Returns:
+            True if ``coefficient_of_variation`` is in (0.1, 10.0).
+        """
         # Heuristic: CV should be moderate, not extreme
         return 0.1 < self.coefficient_of_variation < 10.0
 
@@ -101,11 +117,24 @@ class PredictionResult:
     )
 
     def __post_init__(self):
+        """Initialise ``confidence_intervals`` to an empty dict if None was passed."""
         if self.confidence_intervals is None:
             self.confidence_intervals = {}
 
     def get_interval(self, level: float) -> Tuple[np.ndarray, np.ndarray]:
-        """Get confidence interval at specified level."""
+        """Return a symmetric confidence interval at ``level`` standard deviations.
+
+        Caches results keyed by ``"{level:.1f}sigma"``; repeated calls at
+        the same level are free.
+
+        Args:
+            level: Number of standard deviations (e.g. ``2.0`` gives an
+                approximate 95% interval under Gaussian assumptions).
+
+        Returns:
+            Tuple ``(lower, upper)`` of arrays with the same shape as
+            ``self.mean``.
+        """
         key = f"{level:.1f}sigma"
         if key not in self.confidence_intervals:
             lower = self.mean - level * self.std
