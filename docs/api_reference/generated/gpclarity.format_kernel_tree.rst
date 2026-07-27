@@ -3,4 +3,4 @@
 
 .. currentmodule:: gpclarity
 
-.. autofunction:: format_kernel_tree
+.. autodata:: format_kernel_tree

@@ -3,4 +3,4 @@
 
 .. currentmodule:: gpclarity
 
-.. autofunction:: compute_roughness_score
+.. autodata:: compute_roughness_score

@@ -3,4 +3,4 @@
 
 .. currentmodule:: gpclarity
 
-.. autofunction:: check_model_health
+.. autodata:: check_model_health

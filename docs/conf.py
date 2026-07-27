@@ -39,7 +39,15 @@ extensions = [
 templates_path = ["_templates"]
 
 # List of patterns to exclude
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
+exclude_patterns = [
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    "**.ipynb_checkpoints",
+    # Legacy per-object autosummary stubs; API is documented on the module pages.
+    "api_reference/generated",
+    "generated",
+]
 
 # The suffix of source filenames
 source_suffix = ".rst"
@@ -56,7 +64,6 @@ html_theme_options = {
     "canonical_url": "",
     "analytics_id": "",
     "logo_only": False,
-    "display_version": True,
     "prev_next_buttons_location": "bottom",
     "style_external_links": False,
     "vcs_pageview_mode": "",
@@ -107,10 +114,19 @@ napoleon_include_special_with_doc = True
 napoleon_use_admonition_for_examples = False
 napoleon_use_admonition_for_notes = False
 napoleon_use_admonition_for_references = False
-napoleon_use_ivar = False
+napoleon_use_ivar = True
 napoleon_use_param = True
 napoleon_use_rtype = True
-napoleon_type_aliases = None
+
+# Map short type aliases used in docstrings to their canonical, resolvable targets
+napoleon_type_aliases = {
+    "np.ndarray": "numpy.ndarray",
+    "np.array": "numpy.ndarray",
+    "array-like": "numpy.ndarray",
+    "pd.DataFrame": "pandas.DataFrame",
+    "plt.Figure": "matplotlib.figure.Figure",
+    "plt.Axes": "matplotlib.axes.Axes",
+}
 
 # Intersphinx mapping
 intersphinx_mapping = {
@@ -118,6 +134,7 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
     "sklearn": ("https://scikit-learn.org/stable/", None),
 }
 

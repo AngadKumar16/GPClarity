@@ -2,7 +2,7 @@ Uncertainty Analysis
 ====================
 
 The ``uncertainty_analysis`` module quantifies, visualises, and calibrates
-predictive uncertainty across the input space. :class:`UncertaintyProfiler`
+predictive uncertainty across the input space. :class:`~gpclarity.uncertainty_analysis.UncertaintyProfiler`
 classifies test points as interpolation, extrapolation, or boundary regions,
 computes spatial uncertainty statistics, and can scale uncertainty estimates
 to match observed coverage on validation data.

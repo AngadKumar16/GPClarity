@@ -3,4 +3,4 @@
 
 .. currentmodule:: gpclarity
 
-.. autofunction:: count_kernel_components
+.. autodata:: count_kernel_components

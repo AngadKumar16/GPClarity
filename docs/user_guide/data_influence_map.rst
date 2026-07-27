@@ -5,6 +5,7 @@ gpclarity.DataInfluenceMap
 
 .. autoclass:: DataInfluenceMap
    :no-members:
+   :no-index:
    :show-inheritance:
 
 Constructor

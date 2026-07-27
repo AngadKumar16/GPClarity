@@ -5,6 +5,7 @@ gpclarity.HyperparameterTracker
 
 .. autoclass:: HyperparameterTracker
    :no-members:
+   :no-index:
    :show-inheritance:
 
 Constructor

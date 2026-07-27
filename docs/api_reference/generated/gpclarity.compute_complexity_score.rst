@@ -3,4 +3,4 @@
 
 .. currentmodule:: gpclarity
 
-.. autofunction:: compute_complexity_score
+.. autodata:: compute_complexity_score

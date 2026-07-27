@@ -50,6 +50,31 @@ Data Influence
   - ``.get_influence_report()``        → comprehensive influence analysis report
   - ``.plot_influence()``              → scatter visualization of influence scores
 
+Predictive Metrics & Calibration
+--------------------------------
+- ``nlpd_gaussian(y, mean, var)``       — negative log predictive density
+- ``crps_gaussian(y, mean, var)``       — continuous ranked probability score
+- ``coverage_probability(...)``         — empirical interval coverage
+- ``calibration_curve(...)`` / ``calibration_error(...)`` — reliability diagnostics
+- ``pit_values(...)`` / ``sharpness(var)`` / ``interval_score(...)``
+- ``cross_validate(factory, X, y)``     — k-fold CV of a model-building function
+
+Kernel Recommendation
+---------------------
+- ``suggest_kernel(X, y)``              — data-driven kernel structure suggestion
+- ``analyze_data_characteristics(X, y)``— trend/period/smoothness/noise summary
+- ``build_kernel(recommendation)``      — turn a suggestion into a GPy kernel
+
+Model Comparison
+----------------
+- ``compare_models({name: model})``     — rank models by AIC/BIC/LL/test metrics
+- ``select_best_model({name: model})``  — pick the winner under a criterion
+
+Diagnostic Reporting
+--------------------
+- ``generate_report(model, X, y)``      — full diagnostic report
+  (``.to_markdown()`` / ``.to_html()`` / ``.to_json()`` / ``.save(path)``)
+
 Utilities
 ---------
 - ``check_model_health(model)``         — validate model before analysis
@@ -98,6 +123,34 @@ __all__ = [
     "extract_kernel_params_flat",
     "get_lengthscale",
     "get_noise_variance",
+    # Predictive metrics & calibration (GPy-independent)
+    "nlpd_gaussian",
+    "crps_gaussian",
+    "coverage_probability",
+    "nominal_coverage",
+    "pit_values",
+    "calibration_curve",
+    "calibration_error",
+    "sharpness",
+    "interval_score",
+    "compute_all_metrics",
+    "cross_validate",
+    "CVResult",
+    # Kernel recommendation
+    "analyze_data_characteristics",
+    "suggest_kernel",
+    "build_kernel",
+    "KernelRecommendation",
+    "DataCharacteristics",
+    # Model comparison & selection
+    "compare_models",
+    "select_best_model",
+    "score_model",
+    "ModelComparison",
+    "ModelScore",
+    # Diagnostic reporting
+    "generate_report",
+    "DiagnosticReport",
 ]
 
 if _GPY_AVAILABLE:
@@ -153,6 +206,40 @@ else:
         "gpclarity running in limited mode. Install with 'pip install gpclarity[full]'",
         ImportWarning,
     )
+
+# The modules below operate on already-trained models via duck typing and import
+# only NumPy at module load, so they are available even without GPy. Functions
+# that actually need GPy (e.g. build_kernel, cross_validate) raise a clear error
+# only when called.
+from .metrics import (  # noqa: E402
+    CVResult,
+    calibration_curve,
+    calibration_error,
+    compute_all_metrics,
+    coverage_probability,
+    crps_gaussian,
+    cross_validate,
+    interval_score,
+    nlpd_gaussian,
+    nominal_coverage,
+    pit_values,
+    sharpness,
+)
+from .kernel_recommendation import (  # noqa: E402
+    DataCharacteristics,
+    KernelRecommendation,
+    analyze_data_characteristics,
+    build_kernel,
+    suggest_kernel,
+)
+from .model_comparison import (  # noqa: E402
+    ModelComparison,
+    ModelScore,
+    compare_models,
+    score_model,
+    select_best_model,
+)
+from .reporting import DiagnosticReport, generate_report  # noqa: E402
 
 __author__ = "Angad Kumar"
 __email__ = "angadkumar16ak@gmail.com"

@@ -3,4 +3,4 @@
 
 .. currentmodule:: gpclarity
 
-.. autofunction:: interpret_lengthscale
+.. autodata:: interpret_lengthscale

@@ -3,4 +3,4 @@
 
 .. currentmodule:: gpclarity
 
-.. autofunction:: get_noise_variance
+.. autodata:: get_noise_variance

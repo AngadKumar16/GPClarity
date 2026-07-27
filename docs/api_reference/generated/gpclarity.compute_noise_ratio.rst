@@ -3,4 +3,4 @@
 
 .. currentmodule:: gpclarity
 
-.. autofunction:: compute_noise_ratio
+.. autodata:: compute_noise_ratio

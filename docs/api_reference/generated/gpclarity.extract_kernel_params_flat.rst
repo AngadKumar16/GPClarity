@@ -3,4 +3,4 @@
 
 .. currentmodule:: gpclarity
 
-.. autofunction:: extract_kernel_params_flat
+.. autodata:: extract_kernel_params_flat
