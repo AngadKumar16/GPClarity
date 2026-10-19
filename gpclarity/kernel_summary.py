@@ -206,6 +206,7 @@ def summarize_kernel(
 
     # Parse each component recursively
     def parse_component(kern: GPy.kern.Kern, path: str = ""):
+        """Recursively walk a kernel tree, recording each leaf component's path."""
         if hasattr(kern, "parts") and kern.parts:
             for i, part in enumerate(kern.parts):
                 parse_component(part, f"{path}.parts[{i}]" if path else f"parts[{i}]")
@@ -297,6 +298,7 @@ def format_kernel_tree(model: GPy.models.GPRegression) -> str:
     structure = get_kernel_structure(model.kern)
 
     def format_node(node, indent=0):
+        """Render one tree node (or nested list) as indented ASCII lines."""
         if isinstance(node, list):
             return "\n".join(format_node(n, indent + 2) for n in node)
         return (
@@ -318,6 +320,7 @@ def count_kernel_components(kern: Any) -> int:
     """
 
     def count_leaves(kernel: Any) -> int:
+        """Count leaf (non-composite) components in a kernel tree."""
         if hasattr(kernel, "parts") and kernel.parts:
             return sum(count_leaves(k) for k in kernel.parts)
         return 1
@@ -366,6 +369,7 @@ def extract_kernel_params_flat(model: Any) -> Dict[str, float]:
     params = {}
 
     def extract(kernel: Any, path: str = ""):
+        """Recursively collect flat ``path -> value`` entries for every parameter."""
         current_path = f"{path}.{kernel.name}" if path else kernel.name
 
         if hasattr(kernel, "parameters"):
@@ -414,6 +418,7 @@ def get_lengthscale(
         result = {}
 
         def find_lengthscales(kernel: Any, path: str = ""):
+            """Recursively collect lengthscale values keyed by component path."""
             current = f"{path}.{kernel.name}" if path else kernel.name
             if hasattr(kernel, "lengthscale"):
                 result[current] = _extract_values(kernel.lengthscale)

@@ -178,10 +178,18 @@ if _GPY_AVAILABLE:
 else:
     # Define stubs
     class _Stub:
+        """Placeholder for a GPy-dependent symbol when GPy is not installed.
+
+        Calling the stub raises :class:`ImportError` with an install hint, so the
+        package imports cleanly in limited mode but fails loudly on first use.
+        """
+
         def __init__(self, name):
+            """Store the public name this stub stands in for."""
             self.name = name
 
         def __call__(self, *args, **kwargs):
+            """Raise :class:`ImportError` explaining that GPy is required."""
             raise ImportError(
                 f"{self.name} requires GPy. Install: pip install gpclarity[full]"
             )

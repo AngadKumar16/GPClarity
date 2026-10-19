@@ -64,6 +64,7 @@ def _validate_train_data(func: Callable) -> Callable:
     def wrapper(
         self, X_train: np.ndarray, y_train: Optional[np.ndarray] = None, *args, **kwargs
     ):
+        """Validate ``X_train``/``y_train`` shapes, then call the wrapped method."""
         if X_train is None:
             raise ValueError("X_train cannot be None")
 

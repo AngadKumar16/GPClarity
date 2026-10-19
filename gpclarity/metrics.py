@@ -316,7 +316,7 @@ def interval_score(
     from math import erf
 
     def _ppf(p: float) -> float:
-        # invert standard normal CDF via bisection (dependency-free)
+        """Invert the standard-normal CDF by bisection (dependency-free)."""
         lo, hi = -12.0, 12.0
         for _ in range(200):
             mid = 0.5 * (lo + hi)
@@ -447,6 +447,7 @@ def cross_validate(
         )
 
     def _avg(key: str) -> float:
+        """Mean of one metric ``key`` across all folds."""
         return float(np.mean([f[key] for f in per_fold]))
 
     return CVResult(

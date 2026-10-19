@@ -282,6 +282,7 @@ def compare_models(
     ]
 
     def _key(s: ModelScore) -> float:
+        """Return the sort key (the chosen criterion's value) for one score row."""
         if criterion in s.to_dict():
             return float(s.to_dict()[criterion])
         raise ComparisonError(f"criterion {criterion!r} not available in scores")

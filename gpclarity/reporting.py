@@ -84,6 +84,7 @@ class DiagnosticReport:
         """
 
         def _default(o: Any) -> Any:
+            """Coerce NumPy scalars/arrays to JSON-native types for ``json.dumps``."""
             if isinstance(o, np.ndarray):
                 return o.tolist()
             if isinstance(o, (np.integer,)):
@@ -286,6 +287,7 @@ def generate_report(
 
     if "uncertainty" in wanted and X is not None and X_test is not None:
         def _uncertainty() -> Dict[str, Any]:
+            """Compute uncertainty diagnostics on the test grid for the report."""
             prof = UncertaintyProfiler(model, X_train=X)
             return prof.compute_diagnostics(X_test)
 
@@ -293,6 +295,7 @@ def generate_report(
 
     if "influence" in wanted and X is not None:
         def _influence() -> Dict[str, Any]:
+            """Compute the data-influence report section for the report."""
             infl = DataInfluenceMap(model)
             if y is not None:
                 return infl.get_influence_report(X, y)

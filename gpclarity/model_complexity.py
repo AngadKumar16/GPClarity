@@ -162,7 +162,18 @@ class ComplexityMetrics:
 class ComplexityScorer(Protocol):
     """Protocol for pluggable complexity scoring strategies."""
 
-    def __call__(self, model: Any, X: np.ndarray, **kwargs) -> float: ...
+    def __call__(self, model: Any, X: np.ndarray, **kwargs) -> float:
+        """Return a scalar complexity score for ``model`` evaluated at ``X``.
+
+        Args:
+            model: The trained GP model.
+            X: Inputs at which to evaluate complexity.
+            **kwargs: Strategy-specific options.
+
+        Returns:
+            The complexity score.
+        """
+        ...
 
 
 @dataclass
