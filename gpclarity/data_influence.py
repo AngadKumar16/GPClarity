@@ -15,7 +15,11 @@ import GPy
 import numpy as np
 
 from gpclarity.exceptions import InfluenceError
-from gpclarity.utils import _cholesky_with_jitter, _validate_kernel_matrix
+from gpclarity.utils import (
+    _cholesky_with_jitter,
+    _validate_kernel_matrix,
+    to_scalar,
+)
 
 if TYPE_CHECKING:
     import matplotlib.pyplot as plt
@@ -158,7 +162,7 @@ class DataInfluenceMap:
             _validate_kernel_matrix(K)
 
             if noise_var is None:
-                noise_var = float(self.model.Gaussian_noise.variance)
+                noise_var = to_scalar(self.model.Gaussian_noise.variance)
 
             if not np.isfinite(noise_var) or noise_var < 0:
                 logger.warning(f"Invalid noise variance: {noise_var}, using fallback")
@@ -212,7 +216,7 @@ class DataInfluenceMap:
             else:
                 K = self.model.kern.K(X_train, X_train)
                 _validate_kernel_matrix(K)
-                noise_var = float(self.model.Gaussian_noise.variance)
+                noise_var = to_scalar(self.model.Gaussian_noise.variance)
                 K_stable = K + np.eye(K.shape[0]) * max(noise_var, 1e-6)
                 L = _cholesky_with_jitter(K_stable)
 
@@ -247,7 +251,7 @@ class DataInfluenceMap:
                 n_points=n,
                 metadata={
                     "kernel_type": type(self.model.kern).__name__,
-                    "noise_variance": float(self.model.Gaussian_noise.variance),
+                    "noise_variance": to_scalar(self.model.Gaussian_noise.variance),
                     "cache_used": use_cache,
                 },
             )
@@ -289,7 +293,7 @@ class DataInfluenceMap:
             K_full = self.model.kern.K(X_train, X_train)
             _validate_kernel_matrix(K_full)
 
-            noise_var = float(self.model.Gaussian_noise.variance)
+            noise_var = to_scalar(self.model.Gaussian_noise.variance)
             if not np.isfinite(noise_var):
                 raise InfluenceError(f"Invalid noise variance: {noise_var}")
 
@@ -380,7 +384,7 @@ class DataInfluenceMap:
             var_increase = max(0, var_without_i - float(var_with_i[0, 0]))
 
             # Prediction error
-            pred_error = abs(float(mean_with_i[0, 0]) - float(y_train[i]))
+            pred_error = abs(float(mean_with_i[0, 0]) - to_scalar(y_train[i]))
 
             return var_increase, pred_error
 

@@ -77,3 +77,16 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - `InterpretationConfig`, `LengthscaleThresholds`, `VarianceThresholds` — configurable interpretation thresholds
 - Custom exception hierarchy: `GPClarityError`, `InfluenceError`, `KernelError`, `ComplexityError`, `UncertaintyError`, `TrackingError`, `OptimizationError`, `LinAlgError`, `ValidationError`
 - Graceful degradation: stub objects with helpful error messages when GPy is not installed
+
+## [Unreleased]
+
+### Fixed
+- Scalar extraction from GPy parameters now works on NumPy 2.x (`float()` on
+  size-1 arrays raises there). Added `gpclarity.utils.to_scalar`.
+
+### Changed
+- Supported Python versions are now 3.10–3.13 (3.9 is end-of-life).
+- `CITATION.cff` license corrected to MIT to match `LICENSE`.
+
+### Added
+- `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1).

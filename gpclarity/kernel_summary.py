@@ -8,6 +8,8 @@ from typing import Any, Dict, List, Optional, Union
 import GPy
 import numpy as np
 
+from gpclarity.utils import to_scalar
+
 
 @dataclass
 class LengthscaleThresholds:
@@ -222,7 +224,7 @@ def summarize_kernel(
                 )
 
             if hasattr(kern, "variance"):
-                var = float(kern.variance)
+                var = to_scalar(kern.variance)
                 comp["params"]["variance"] = var
                 is_noise = "White" in kern.name or "Noise" in kern.name
                 comp["interpretation"]["strength"] = interpret_variance(
@@ -230,7 +232,7 @@ def summarize_kernel(
                 )
 
             if hasattr(kern, "periodicity"):
-                comp["params"]["periodicity"] = float(kern.periodicity)
+                comp["params"]["periodicity"] = to_scalar(kern.periodicity)
                 comp["interpretation"][
                     "pattern"
                 ] = f"Periodic with period {kern.periodicity.values:.2f}"
@@ -447,7 +449,7 @@ def get_noise_variance(model: Any) -> float:
         ValueError: If noise variance cannot be found on the model
     """
     if hasattr(model, "Gaussian_noise") and hasattr(model.Gaussian_noise, "variance"):
-        return float(model.Gaussian_noise.variance)
+        return to_scalar(model.Gaussian_noise.variance)
     if hasattr(model, "likelihood") and hasattr(model.likelihood, "variance"):
-        return float(model.likelihood.variance)
+        return to_scalar(model.likelihood.variance)
     raise ValueError("Could not extract noise variance from model")
