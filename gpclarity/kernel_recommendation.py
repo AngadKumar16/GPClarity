@@ -132,9 +132,7 @@ def _validate_xy(X: Any, y: Any) -> Tuple[np.ndarray, np.ndarray]:
     if Xa.ndim == 1:
         Xa = Xa.reshape(-1, 1)
     if Xa.shape[0] != ya.shape[0]:
-        raise RecommendationError(
-            f"X has {Xa.shape[0]} rows but y has {ya.shape[0]}"
-        )
+        raise RecommendationError(f"X has {Xa.shape[0]} rows but y has {ya.shape[0]}")
     if Xa.shape[0] < 4:
         raise RecommendationError("need at least 4 points to analyse data")
     if not (np.all(np.isfinite(Xa)) and np.all(np.isfinite(ya))):

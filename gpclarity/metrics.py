@@ -245,9 +245,7 @@ def calibration_curve(
     return {"expected": expected, "observed": observed}
 
 
-def calibration_error(
-    y_true: Any, mean: Any, variance: Any, n_bins: int = 10
-) -> float:
+def calibration_error(y_true: Any, mean: Any, variance: Any, n_bins: int = 10) -> float:
     """Expected calibration error: mean |observed − expected| coverage gap.
 
     A single scalar summarising the reliability curve from
@@ -288,9 +286,7 @@ def sharpness(variance: Any) -> float:
     return float(np.sqrt(np.mean(var)))
 
 
-def interval_score(
-    y_true: Any, mean: Any, variance: Any, alpha: float = 0.05
-) -> float:
+def interval_score(y_true: Any, mean: Any, variance: Any, alpha: float = 0.05) -> float:
     """Mean interval score for the central ``(1 − alpha)`` prediction interval.
 
     The interval score (Gneiting & Raftery, 2007) rewards narrow intervals and

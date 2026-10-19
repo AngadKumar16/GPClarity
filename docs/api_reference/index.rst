@@ -41,6 +41,14 @@ Predictive metrics, calibration, and cross-validation:
    compute_all_metrics
    cross_validate
 
+Emulator validation (Bastos & O'Hagan 2009):
+
+.. autosummary::
+   :nosignatures:
+
+   validate_emulator
+   emulator_diagnostics
+
 Kernel recommendation, model comparison, and reporting:
 
 .. autosummary::
@@ -67,6 +75,7 @@ Core Classes
    DiagnosticReport
    KernelRecommendation
    CVResult
+   EmulatorValidation
 
 Module Reference
 ----------------
@@ -80,6 +89,7 @@ Module Reference
    hyperparam_tracker
    data_influence
    metrics
+   emulator_validation
    kernel_recommendation
    model_comparison
    reporting

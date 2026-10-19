@@ -49,9 +49,11 @@ class TestExportFormats:
 
     def test_json_handles_numpy(self):
         r = DiagnosticReport(
-            title="np", created="now",
-            sections={"s": {"ok": True, "data": {"arr": np.arange(3),
-                                                 "val": np.float64(1.5)}}},
+            title="np",
+            created="now",
+            sections={
+                "s": {"ok": True, "data": {"arr": np.arange(3), "val": np.float64(1.5)}}
+            },
         )
         parsed = json.loads(r.to_json())
         assert parsed["sections"]["s"]["data"]["arr"] == [0, 1, 2]

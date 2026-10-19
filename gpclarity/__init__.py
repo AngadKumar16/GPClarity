@@ -59,6 +59,12 @@ Predictive Metrics & Calibration
 - ``pit_values(...)`` / ``sharpness(var)`` / ``interval_score(...)``
 - ``cross_validate(factory, X, y)``     — k-fold CV of a model-building function
 
+Emulator Validation (Bastos & O'Hagan 2009)
+-------------------------------------------
+- ``validate_emulator(model, X_val, y_val)`` — Mahalanobis, standardized and
+  pivoted Cholesky errors on held-out data, with a calibration verdict
+- ``emulator_diagnostics(y, mean, cov)`` — same diagnostics from any joint prediction
+
 Kernel Recommendation
 ---------------------
 - ``suggest_kernel(X, y)``              — data-driven kernel structure suggestion
@@ -136,6 +142,10 @@ __all__ = [
     "compute_all_metrics",
     "cross_validate",
     "CVResult",
+    # Emulator validation (Bastos & O'Hagan 2009)
+    "validate_emulator",
+    "emulator_diagnostics",
+    "EmulatorValidation",
     # Kernel recommendation
     "analyze_data_characteristics",
     "suggest_kernel",
@@ -248,6 +258,11 @@ from .model_comparison import (  # noqa: E402
     select_best_model,
 )
 from .reporting import DiagnosticReport, generate_report  # noqa: E402
+from .emulator_validation import (  # noqa: E402
+    EmulatorValidation,
+    emulator_diagnostics,
+    validate_emulator,
+)
 
 __author__ = "Angad Kumar"
 __email__ = "angadkumar16ak@gmail.com"

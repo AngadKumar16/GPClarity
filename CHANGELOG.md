@@ -6,6 +6,25 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- Scalar extraction from GPy parameters now works on NumPy 2.x (`float()` on
+  size-1 arrays raises there). Added `gpclarity.utils.to_scalar`.
+
+### Changed
+- Requires GPy>=1.14.0 (first release with NumPy 2 support) and NumPy>=2.
+  GPy 1.14 depends on paramz 0.10, which needs Python 3.11+, so supported
+  Python versions are now 3.11–3.14.
+- `CITATION.cff` license corrected to MIT to match `LICENSE`.
+
+### Added
+- `validate_emulator()` / `emulator_diagnostics()` — Bastos & O'Hagan (2009)
+  emulator validation on held-out data: individual standardized errors,
+  Mahalanobis distance with chi-squared reference, pivoted Cholesky errors,
+  and a plain-language verdict (`EmulatorValidation`).
+- `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1).
+
 ## [0.1.3] — 2026-04-09
 
 ### Added
@@ -77,18 +96,3 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - `InterpretationConfig`, `LengthscaleThresholds`, `VarianceThresholds` — configurable interpretation thresholds
 - Custom exception hierarchy: `GPClarityError`, `InfluenceError`, `KernelError`, `ComplexityError`, `UncertaintyError`, `TrackingError`, `OptimizationError`, `LinAlgError`, `ValidationError`
 - Graceful degradation: stub objects with helpful error messages when GPy is not installed
-
-## [Unreleased]
-
-### Fixed
-- Scalar extraction from GPy parameters now works on NumPy 2.x (`float()` on
-  size-1 arrays raises there). Added `gpclarity.utils.to_scalar`.
-
-### Changed
-- Requires GPy>=1.14.0 (first release with NumPy 2 support) and NumPy>=2.
-  GPy 1.14 depends on paramz 0.10, which needs Python 3.11+, so supported
-  Python versions are now 3.11–3.14.
-- `CITATION.cff` license corrected to MIT to match `LICENSE`.
-
-### Added
-- `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1).

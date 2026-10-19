@@ -137,7 +137,9 @@ class DiagnosticReport:
                     f"<p class='err'>Not available: {_esc(payload.get('error', ''))}</p>"
                 )
                 continue
-            parts.append("<pre>" + _esc("\n".join(_render_lines(payload["data"]))) + "</pre>")
+            parts.append(
+                "<pre>" + _esc("\n".join(_render_lines(payload["data"]))) + "</pre>"
+            )
         parts.append("</body></html>")
         return "".join(parts)
 
@@ -163,8 +165,7 @@ class DiagnosticReport:
             text = self.to_json()
         else:
             raise ReportError(
-                f"unrecognised report extension: {path!r} "
-                "(use .md, .html, or .json)"
+                f"unrecognised report extension: {path!r} " "(use .md, .html, or .json)"
             )
         with open(path, "w", encoding="utf-8") as fh:
             fh.write(text)
@@ -178,11 +179,7 @@ class DiagnosticReport:
 def _esc(text: Any) -> str:
     """HTML-escape a value's string form."""
     s = str(text)
-    return (
-        s.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-    )
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def _render_lines(data: Any, depth: int = 0) -> List[str]:
@@ -281,11 +278,10 @@ def generate_report(
         sections["kernel"] = _safe("kernel", summarize_kernel, model)
 
     if "complexity" in wanted and X is not None:
-        sections["complexity"] = _safe(
-            "complexity", compute_complexity_score, model, X
-        )
+        sections["complexity"] = _safe("complexity", compute_complexity_score, model, X)
 
     if "uncertainty" in wanted and X is not None and X_test is not None:
+
         def _uncertainty() -> Dict[str, Any]:
             """Compute uncertainty diagnostics on the test grid for the report."""
             prof = UncertaintyProfiler(model, X_train=X)
@@ -294,6 +290,7 @@ def generate_report(
         sections["uncertainty"] = _safe("uncertainty", _uncertainty)
 
     if "influence" in wanted and X is not None:
+
         def _influence() -> Dict[str, Any]:
             """Compute the data-influence report section for the report."""
             infl = DataInfluenceMap(model)

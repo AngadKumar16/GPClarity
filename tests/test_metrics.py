@@ -92,8 +92,16 @@ class TestSharpnessAndAll:
     def test_compute_all_metrics_keys(self, calibrated):
         y, mean, var = calibrated
         d = gpclarity.compute_all_metrics(y, mean, var)
-        for k in ("nlpd", "crps", "rmse", "coverage", "calibration_error",
-                  "sharpness", "interval_score", "nominal_coverage"):
+        for k in (
+            "nlpd",
+            "crps",
+            "rmse",
+            "coverage",
+            "calibration_error",
+            "sharpness",
+            "interval_score",
+            "nominal_coverage",
+        ):
             assert k in d
 
 
