@@ -61,3 +61,27 @@ class ValidationError(GPClarityError):
     """Raised when input validation fails."""
 
     pass
+
+
+class ComparisonError(GPClarityError):
+    """Raised when model comparison or selection fails."""
+
+    pass
+
+
+class RecommendationError(GPClarityError):
+    """Raised when kernel recommendation fails."""
+
+    pass
+
+
+class ReportError(GPClarityError):
+    """Raised when diagnostic report generation or export fails."""
+
+    pass
+
+
+class MetricError(GPClarityError):
+    """Raised when a predictive metric or cross-validation computation fails."""
+
+    pass

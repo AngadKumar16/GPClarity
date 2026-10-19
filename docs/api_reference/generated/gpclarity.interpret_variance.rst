@@ -3,4 +3,4 @@
 
 .. currentmodule:: gpclarity
 
-.. autofunction:: interpret_variance
+.. autodata:: interpret_variance

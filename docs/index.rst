@@ -39,6 +39,10 @@ Features
 * **Optimization Tracking**: Monitor hyperparameter convergence with publication-ready
   visualizations
 * **Data Influence**: Identify high-leverage points and quantify leave-one-out effects
+* **Predictive Metrics**: Score calibration and sharpness (NLPD, CRPS, coverage, PIT) and cross-validate
+* **Kernel Recommendation**: Get a data-driven kernel suggestion with a plain-language rationale
+* **Model Comparison**: Rank candidate models by AIC/BIC, likelihood, or held-out metrics
+* **Diagnostic Reports**: Produce a one-call Markdown/HTML/JSON report of every diagnostic
 
 Why GPClarity?
 --------------

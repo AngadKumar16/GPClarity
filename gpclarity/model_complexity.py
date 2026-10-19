@@ -13,7 +13,11 @@ import numpy as np
 
 from gpclarity.exceptions import ComplexityError, KernelError
 from gpclarity.kernel_summary import count_kernel_components, extract_kernel_params_flat
-from gpclarity.utils import _cholesky_with_jitter, _validate_kernel_matrix
+from gpclarity.utils import (
+    _cholesky_with_jitter,
+    _validate_kernel_matrix,
+    to_scalar,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -162,7 +166,18 @@ class ComplexityMetrics:
 class ComplexityScorer(Protocol):
     """Protocol for pluggable complexity scoring strategies."""
 
-    def __call__(self, model: Any, X: np.ndarray, **kwargs) -> float: ...
+    def __call__(self, model: Any, X: np.ndarray, **kwargs) -> float:
+        """Return a scalar complexity score for ``model`` evaluated at ``X``.
+
+        Args:
+            model: The trained GP model.
+            X: Inputs at which to evaluate complexity.
+            **kwargs: Strategy-specific options.
+
+        Returns:
+            The complexity score.
+        """
+        ...
 
 
 @dataclass
@@ -359,7 +374,7 @@ class ComplexityAnalyzer:
             if hasattr(model, "Gaussian_noise") and hasattr(
                 model.Gaussian_noise, "variance"
             ):
-                noise_var = float(model.Gaussian_noise.variance)
+                noise_var = to_scalar(model.Gaussian_noise.variance)
                 if not np.isfinite(noise_var) or noise_var < 0:
                     noise_var = 1.0
 
@@ -559,7 +574,7 @@ def _extract_signal_variance(model: Any) -> float:
     # Try to get variance from kernel
     if hasattr(kern, "variance"):
         try:
-            return float(kern.variance)
+            return to_scalar(kern.variance)
         except (TypeError, ValueError):
             pass
 
@@ -569,7 +584,7 @@ def _extract_signal_variance(model: Any) -> float:
         for part in kern.parts:
             if hasattr(part, "variance"):
                 try:
-                    total_var += float(part.variance)
+                    total_var += to_scalar(part.variance)
                 except (TypeError, ValueError):
                     pass
         if total_var > 0:
@@ -604,7 +619,7 @@ def _extract_noise_variance(model: Any) -> float:
     if hasattr(model, "Gaussian_noise"):
         if hasattr(model.Gaussian_noise, "variance"):
             try:
-                return float(model.Gaussian_noise.variance)
+                return to_scalar(model.Gaussian_noise.variance)
             except (TypeError, ValueError):
                 pass
 
@@ -613,7 +628,7 @@ def _extract_noise_variance(model: Any) -> float:
         lik = model.likelihood
         if hasattr(lik, "variance"):
             try:
-                return float(lik.variance)
+                return to_scalar(lik.variance)
             except (TypeError, ValueError):
                 pass
 

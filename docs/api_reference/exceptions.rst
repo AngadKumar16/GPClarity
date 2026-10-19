@@ -1,7 +1,7 @@
 Exceptions
 ==========
 
-All GPClarity exceptions inherit from :class:`GPClarityError`. Catch it to
+All GPClarity exceptions inherit from :class:`~gpclarity.exceptions.GPClarityError`. Catch it to
 handle any library error in a single ``except`` block, or catch a more specific
 subclass when you want targeted recovery.
 

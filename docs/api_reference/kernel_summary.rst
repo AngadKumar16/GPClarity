@@ -4,7 +4,7 @@ Kernel Summary
 The ``kernel_summary`` module parses GPy kernel trees into human-readable text.
 It translates raw hyperparameter values (lengthscales, variances, noise levels)
 into plain-language interpretations and displays composite kernels as an ASCII
-hierarchy. Interpretation behaviour is controlled by :class:`InterpretationConfig`,
+hierarchy. Interpretation behaviour is controlled by :class:`~gpclarity.kernel_summary.InterpretationConfig`,
 which lets you adjust the numeric thresholds to match your data's scale.
 
 **When to use:** after training, to understand what structure the kernel has

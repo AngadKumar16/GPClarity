@@ -2,7 +2,7 @@ Utilities
 =========
 
 The ``utils`` module provides shared numerical helpers used internally by all
-GPClarity modules, plus :func:`check_model_health` — the only public, stable
+GPClarity modules, plus :func:`~gpclarity.check_model_health` — the only public, stable
 export from this module. Call ``check_model_health`` before running any analysis
 to confirm that the model has finite parameters and a computable log-likelihood.
 

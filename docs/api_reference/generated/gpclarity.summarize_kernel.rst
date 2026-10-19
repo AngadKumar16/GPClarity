@@ -3,4 +3,4 @@
 
 .. currentmodule:: gpclarity
 
-.. autofunction:: summarize_kernel
+.. autodata:: summarize_kernel

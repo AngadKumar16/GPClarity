@@ -9,5 +9,9 @@ GPClarity User Guide
    uncertainty_profiler
    data_influence_map
    hyperparameter_tracker
+   kernel_recommendation
+   predictive_metrics
+   model_comparison
+   reporting
    examples_gallery
    gpclarity

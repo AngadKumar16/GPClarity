@@ -10,6 +10,17 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
+def to_scalar(value: Any) -> float:
+    """
+    Convert a scalar-like value (Python number, 0-d or size-1 array, GPy Param)
+    to a Python float.
+
+    NumPy 2.x no longer allows ``float()`` on arrays with ``ndim > 0``, and GPy
+    parameters are 1-element arrays, so this goes through ``.item()``.
+    """
+    return float(np.asarray(value).item())
+
+
 class LinAlgError(Exception):
     """Linear algebra computation error."""
 

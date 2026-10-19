@@ -148,7 +148,18 @@ class UncertaintyQuantifier(Protocol):
 
     def __call__(
         self, model: Any, X_test: np.ndarray, X_train: Optional[np.ndarray] = None
-    ) -> Tuple[np.ndarray, np.ndarray]: ...
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """Return ``(mean, variance)`` predictions for ``X_test``.
+
+        Args:
+            model: The trained GP model.
+            X_test: Points at which to quantify uncertainty.
+            X_train: Optional training inputs, if the method needs them.
+
+        Returns:
+            A tuple of predictive mean and variance arrays.
+        """
+        ...
 
 
 class UncertaintyProfiler:
@@ -473,6 +484,7 @@ class UncertaintyProfiler:
             from scipy.optimize import minimize_scalar
 
             def objective(scale):
+                """Squared gap between achieved and target coverage for a std scale."""
                 scaled_std = pred.std * scale
                 cov = np.mean(
                     residuals < (self.config.default_confidence_level * scaled_std)
