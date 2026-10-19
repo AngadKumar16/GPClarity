@@ -6,7 +6,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased]
+## [0.2.0] — 2026-10-19
 
 ### Fixed
 - Scalar extraction from GPy parameters now works on NumPy 2.x (`float()` on

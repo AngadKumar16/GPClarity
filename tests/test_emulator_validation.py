@@ -29,7 +29,7 @@ def correlated_draw():
     n = 40
     V = _rbf_cov(n)
     mean = np.zeros(n)
-    y = rng.multivariate_normal(mean, V)
+    y = mean + np.linalg.cholesky(V) @ rng.standard_normal(n)
     return y, mean, V
 
 
